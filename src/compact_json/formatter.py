@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 from decimal import Decimal
 
 import json
@@ -216,13 +217,13 @@ class Formatter:
         self.padded_comma_str = ", " if self.comma_padding else ","
         self.padded_colon_str = ": " if self.colon_padding else ":"
 
-    def indent(self, buffer: list[str], depth: int) -> list[str]:
+    def indent(self, buffer: List[str], depth: int) -> List[str]:
         if depth not in self.indent_cache:
             self.indent_cache[depth] = self.indent_str * depth
         buffer += [self.prefix_string, self.indent_cache[depth]]
         return buffer
 
-    def combine(self, buffer: list[str]) -> str:
+    def combine(self, buffer: List[str]) -> str:
         return "".join(buffer)
 
     def format_element(self, depth: int, element) -> FormattedNode:
