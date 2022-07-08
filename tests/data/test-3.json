@@ -1,0 +1,23 @@
+{
+    "ComplexObject": {
+        "Subthing1": {
+            "X": 55,
+            "Y": 19,
+            "Z": -4
+        },
+        "Subthing2": {
+            "Q": null,
+            "W": [
+                -2,
+                -1,
+                0,
+                1
+            ]
+        },
+        "Distraction": [
+            [],
+            null,
+            null
+        ]
+    }
+}

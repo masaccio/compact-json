@@ -1,0 +1,20 @@
+[
+    {
+        "type": "turret",
+        "loc": {
+            "x": 47,
+            "y": -4
+        },
+        "flags": [
+            "stationary"
+        ]
+    },
+    {
+        "type": "berserker",
+        "hp": 150,
+        "loc": {
+            "x": 0,
+            "y": 0
+        }
+    }
+]
