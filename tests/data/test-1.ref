@@ -1,9 +1,4 @@
-import pytest
-import json
-
-from compact_json import Formatter
-
-REF_JSON_1 = """{
+{
   "widget": {
     "debug": "on",
     "window": {"title": "Sample Konfabulator Widget", "name": "main_window", "width": 500, "height": 500},
@@ -19,16 +14,4 @@ REF_JSON_1 = """{
       "onMouseUp": "sun1.opacity = (sun1.opacity / 100) * 90;"
     }
   }
-}"""
-
-
-def test_simple_format():
-    formatter = Formatter()
-    formatter.indent_spaces = 2
-    formatter.max_inline_length = 120
-
-    with open("tests/data/test-1.json") as f:
-        obj = json.load(f)
-        json_string = formatter.serialize(obj)
-
-    assert json_string == REF_JSON_1
+}

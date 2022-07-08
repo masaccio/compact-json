@@ -30,7 +30,8 @@ def main():
         parser.print_help()
     else:
         formatter = Formatter()
-        formatter.indent_spaces = args.indent
+        if args.indent is not None:
+            formatter.indent_spaces = args.indent
         formatter.max_inline_length = 110
         formatter.max_inline_complexity = 10
         formatter.max_compact_list_complexity = 1
