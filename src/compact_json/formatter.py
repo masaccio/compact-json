@@ -451,7 +451,7 @@ class Formatter:
         return self.format_list_expanded(item)
 
     def format_list_table_row(
-        self, item: FormattedNode, column_stats_list: list[ColumnStats]
+        self, item: FormattedNode, column_stats_list: List[ColumnStats]
     ):
         """Format this list in a single line, with padding to line up with siblings."""
         buffer = ["[ "]
@@ -587,7 +587,7 @@ class Formatter:
         return self.format_dict_expanded(item, True)
 
     def format_dict_table_row(
-        self, item: FormattedNode, column_stats_list: list[ColumnStats]
+        self, item: FormattedNode, column_stats_list: List[ColumnStats]
     ):
         """Format this dict in a single line, with padding to line up with siblings."""
         # Bundle up each property name, value, quotes, colons, etc., or equivalent empty space.
@@ -666,7 +666,7 @@ class Formatter:
         item.format = Format.EXPANDED
         return True
 
-    def justify_parallel_numbers(self, item_list: list[FormattedNode]):
+    def justify_parallel_numbers(self, item_list: List[FormattedNode]):
         """If the given nodes are all numbers and not too big or small, format them
         to the same precision and width."""
         if len(item_list) < 2 or self.dont_justify_numbers:
@@ -685,7 +685,7 @@ class Formatter:
             )
             prop_node.value_length = column_stats.max_value_size
 
-    def get_property_stats(self, item: FormattedNode) -> list[ColumnStats]:
+    def get_property_stats(self, item: FormattedNode) -> List[ColumnStats]:
         """Check if this node's dict children can be formatted as a table, and
         if so, return stats about their properties, such as max width. Returns None
         if they're not eligible."""
@@ -739,7 +739,7 @@ class Formatter:
 
         return ordered_props
 
-    def get_list_stats(self, item: FormattedNode) -> list[ColumnStats]:
+    def get_list_stats(self, item: FormattedNode) -> List[ColumnStats]:
         """Check if this node's list children can be formatted as a table, and if
         so, gather stats like max width.
         Returns None if they're not eligible."""
