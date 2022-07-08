@@ -777,24 +777,3 @@ class Formatter:
             return None
 
         return col_stats_list
-
-
-def main():
-    formatter = Formatter()
-    formatter.indent_spaces = 2
-    formatter.max_inline_length = 110
-    formatter.max_inline_complexity = 10
-    formatter.max_compact_list_complexity = 1
-    formatter.table_dict_minimum_similarity = 30
-    formatter.table_list_minimum_similarity = 50
-    formatter.json_eol_style = EolStyle.LF
-
-    sys.argv.append("/Users/jon/Downloads/saved/./Index/Tables/DataList-906075-2.json")
-    with open(sys.argv[1]) as f:
-        obj = json.load(f)
-    json_string = formatter.serialize(obj)
-    print(json_string)
-
-
-if __name__ == "__main__":
-    main()
