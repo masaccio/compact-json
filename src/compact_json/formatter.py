@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 import json
 import sys
@@ -67,17 +67,13 @@ class ColumnStats:
         self.order_sum += index
         self.count += 1
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
-        self.is_qualified_numeric = self.is_qualified_numeric and (
-            prop_node.kind == JsonValueKind.NUMBER
-        )
+        self.is_qualified_numeric &= prop_node.kind == JsonValueKind.NUMBER
 
         if not self.is_qualified_numeric:
             return
 
         normalized_num = str(prop_node.value)
-        self.is_qualified_numeric = self.is_qualified_numeric and not (
-            "e" in normalized_num
-        )
+        self.is_qualified_numeric &= "e" not in normalized_num
 
         if not self.is_qualified_numeric:
             return
@@ -97,7 +93,12 @@ class ColumnStats:
                 quantize_str = ("0" * (self.chars_after_dec)) + "1"
             else:
                 quantize_str = "0"
-            adjusted_val = str(Decimal(value).quantize(Decimal(quantize_str)))
+
+            try:
+                adjusted_val = str(Decimal(value).quantize(Decimal(quantize_str)))
+            except InvalidOperation:
+                return value.ljust(self.max_value_size - (value_length - len(value)))
+
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
             return adjusted_val.rjust(total_length)
@@ -687,8 +688,8 @@ class Formatter:
 
     def get_property_stats(self, item: FormattedNode) -> List[ColumnStats]:
         """Check if this node's dict children can be formatted as a table, and
-        if so, return stats about their properties, such as max width. Returns None
-        if they're not eligible."""
+        if so, return stats about their properties, such as max width.
+        Returns None if they're not eligible."""
         if len(item.children) < 2:
             return None
 
@@ -711,9 +712,6 @@ class Formatter:
         # Decide the order of the properties by sorting by the average index. It's a crude metric,
         # but it should handle the occasional missing property well enough.
         ordered_props = sorted(props.values(), key=lambda x: x.order_sum / x.count)
-        # props.values().sort(
-        #     key=lambda a, b: (a.order_sum / a.count) - (b.order_sum / b.count)
-        # )
         total_prop_count = sum([cs.count for cs in ordered_props])
 
         # Calculate a score based on how many of all possible properties are present.
