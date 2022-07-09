@@ -10,11 +10,13 @@ from pathlib import Path
 def test_json():
     test_data_path = Path("tests/data")
     for source_filename in test_data_path.rglob("*.json"):
+        if source_filename.match("*.ref*"):
+            continue
         # source_filename = Path("tests/data/test-11.json")
         with open(source_filename) as f:
             obj = json.load(f)
 
-        for ref_filename in test_data_path.rglob(source_filename.stem + ".ref.*"):
+        for ref_filename in test_data_path.rglob(source_filename.stem + ".ref*"):
             formatter = Formatter()
             print(f"\n*** {ref_filename}")
             # ref_filename = "tests/data/test-11.ref.3"
