@@ -1,7 +1,8 @@
 # compact-json
 
-This package is in the early stages of development. It might work for you and it could quite easily throw runtime exceptions due to the large
-number of latent bugs. You are welcome to raise issues.
+[![build:](https://travis-ci.com/masaccio/compact-json.svg?branch=main)](https://app.travis-ci.com/github/masaccio/compact-json)
+
+This package is in the early stages of development. It might work for you and it could quite easily throw runtime exceptions due to the large number of latent bugs. You are welcome to raise issues.
 
 ## Credits
 
