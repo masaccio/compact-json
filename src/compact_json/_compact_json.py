@@ -9,9 +9,16 @@ def command_line_parser():
         description="Format JSON into compact, human readble form"
     )
     parser.add_argument("-V", "--version", action="store_true")
-    # parser.add_argument("--debug", action="store_true", help="Enable debug output")
     parser.add_argument(
-        "--indent", metavar="N", type=int, help="Indent N spaces (default=4)"
+        "--indent", metavar="N", type=int, default=4, help="Indent N spaces (default=4)"
+    )
+    parser.add_argument(
+        "--max-inline-length",
+        metavar="N",
+        type=int,
+        default=50,
+        help="Limit inline elements to N chars, excluding "
+        "indentation and leading property names (default=50)",
     )
     parser.add_argument("json", nargs="*", help="JSON file(s) to dump")
     return parser
@@ -20,9 +27,6 @@ def command_line_parser():
 def main():
     parser = command_line_parser()
     args = parser.parse_args()
-
-    # if args.debug:
-    #     logging.basicConfig(level=logging.DEBUG)
 
     if args.version:
         print(_get_version())
