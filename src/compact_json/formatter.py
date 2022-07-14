@@ -49,6 +49,18 @@ class FormattedNode:
             child.children = []
 
 
+def _fixed_value(value, num_decimals: int):
+    if num_decimals > 0:
+        quantize_str = ("0" * num_decimals) + "1"
+    else:
+        quantize_str = "0"
+
+    try:
+        return str(Decimal(value).quantize(Decimal(quantize_str)))
+    except InvalidOperation:
+        return "*ERROR*"
+
+
 class ColumnStats:
     """Used in figuring out how to format properties/list items as columns in a table format."""
 
@@ -72,7 +84,7 @@ class ColumnStats:
         if not self.is_qualified_numeric:
             return
 
-        normalized_num = str(prop_node.value)
+        normalized_num = str(float(prop_node.value))
         self.is_qualified_numeric &= "e" not in normalized_num
 
         if not self.is_qualified_numeric:
@@ -89,16 +101,7 @@ class ColumnStats:
 
     def format_value(self, value: str, value_length: int, dont_justify: bool) -> str:
         if self.is_qualified_numeric and not dont_justify:
-            if self.chars_after_dec > 0:
-                quantize_str = ("0" * (self.chars_after_dec)) + "1"
-            else:
-                quantize_str = "0"
-
-            try:
-                adjusted_val = str(Decimal(value).quantize(Decimal(quantize_str)))
-            except InvalidOperation:
-                return value.ljust(self.max_value_size - (value_length - len(value)))
-
+            adjusted_val = _fixed_value(value, self.chars_after_dec)
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
             return adjusted_val.rjust(total_length)
@@ -186,7 +189,7 @@ class Formatter:
 
     def __init__(self):
         self.json_eol_style = EolStyle.LF
-        self.max_inline_length = 80
+        self.max_inline_length = 60
         self.max_inline_complexity = 2
         self.max_compact_list_complexity = 1
         self.nested_bracket_padding = True
@@ -345,7 +348,7 @@ class Formatter:
             if (item.complexity >= 2)
             else self.simple_bracket_padding
         )
-        line_length = 2 + 2 if use_bracket_padding else 0
+        line_length = 2 + (2 if use_bracket_padding else 0)
         line_length += (len(item.children) - 1) * len(self.padded_comma_str)
         line_length += sum([fn.value_length for fn in item.children])
 
@@ -388,7 +391,7 @@ class Formatter:
         line_length_so_far = 0
         child_index = 0
         while child_index < len(item.children):
-            not_last_item = child_index < len(item.children) - 1
+            not_last_item = child_index < (len(item.children) - 1)
 
             item_length = item.children[child_index].value_length
             segment_length = (
@@ -631,7 +634,7 @@ class Formatter:
             elif not first_elem:
                 buffer += " " * len(self.padded_comma_str)
             buffer += segment_string
-            needs_comma = len(segment_string.strip()) == 0
+            needs_comma = len(segment_string.strip()) != 0
             first_elem = False
 
         buffer += " }"
