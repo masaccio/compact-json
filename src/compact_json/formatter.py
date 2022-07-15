@@ -3,7 +3,6 @@ from typing import List
 from decimal import Decimal, InvalidOperation
 
 import json
-import sys
 
 
 class EolStyle(Enum):
@@ -709,6 +708,8 @@ class Formatter:
                     prop_stats.prop_name = prop_node.name
                     prop_stats.prop_name_length = prop_node.name_length
                     props[prop_stats.prop_name] = prop_stats
+                else:
+                    prop_stats = props[prop_node.name]
 
                 prop_stats.update(prop_node, index)
 
