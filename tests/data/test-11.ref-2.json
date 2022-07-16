@@ -7,10 +7,10 @@
         "Dave": {"street": "1967 Void Rd.", "unit": "B", "city": "Athens", "state": "GA"}
     },
     "ArrayColumnsObjectRows": [
-        { "hp": 400, "type": "turret", "loc": {"x": 47, "y": -4}, "flags": ["stationary"] },
+        { "type": "turret", "hp": 400, "loc": {"x": 47, "y": -4}, "flags": ["stationary"] },
         { "type": "assassin", "hp": 80, "loc": {"x": 102, "y": 6}, "flags": ["stealth"] },
         { "type": "berserker", "hp": 150, "loc": {"x": 0, "y": 0} },
-        { "loc": {"x": 10, "y": -14}, "type": "pittrap", "flags": ["invulnerable", "stationary"] }
+        { "type": "pittrap", "loc": {"x": 10, "y": -14}, "flags": ["invulnerable", "stationary"] }
     ],
     "DissimilarObjectRows": {
         "lamp": {"x": 4, "y": 1002, "r": 75, "g": 0, "b": 130, "state": 1},

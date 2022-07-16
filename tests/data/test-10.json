@@ -4,17 +4,17 @@
             "TeamId": 1,
             "Spawns": [
                 {
-                    "Time": 0.0,
+                    "Time": 0.1,
                     "UnitType": "Grunt",
                     "SpawnPointIndex": 0
                 },
                 {
-                    "Time": 0.0,
+                    "Time": 0.1,
                     "UnitType": "Grunt",
                     "SpawnPointIndex": 0
                 },
                 {
-                    "Time": 0.0,
+                    "Time": 0.1,
                     "UnitType": "Grunt",
                     "SpawnPointIndex": 0
                 }
