@@ -67,7 +67,7 @@ The `window` and `image` objects are fairly short so when formatted with `compac
 
 ## Installation
 
-```
+``` shell
 python3 -m pip install compact-json
 ```
 
@@ -91,63 +91,86 @@ with open("input.json", "r") as f:
 
 ## Command-line usage
 
-When installed from `pip` a command-line utility `compact-json` is installed which has some useful defaults, but currently limited command-line options for configuring the output:
+When installed from `pip` a command-line utility `compact-json` is installed which has some useful defaults and most of the parameters available in `Formatter` can be set on the command-line:
 
 ``` shell
-usage: compact-json [-h] [-V] [--indent N] [json ...]
+usage: _compact_json.py [-h] [-V] [--crlf] [--max-inline-length N]
+                        [--max-inline-complexity N]
+                        [--max-compact-list-complexity N]
+                        [--bracket-padding {simple,nested}] [--indent N]
+                        [--tab-indent] [--justify-numbers]
+                        [--prefix-string STRING] [--align-properties]
+                        [json ...]
 
 Format JSON into compact, human readble form
 
 positional arguments:
-  json           JSON file(s) to dump
+  json                  JSON file(s) to dump
 
 optional arguments:
-  -h, --help     show this help message and exit
+  -h, --help            show this help message and exit
   -V, --version
-  --indent N     Indent N spaces (default=4)
+  --crlf                Use Windows-style CRLR line endings
+  --max-inline-length N
+                        Limit inline elements to N chars, excluding
+                        indentation and leading property names (default=50)
+  --max-inline-complexity N
+                        Maximum nesting: 0=basic types, 1=dict/list, 2=all
+                        (default=2)
+  --max-compact-list-complexity N
+                        Maximum nesting over multiple lines (default 1)
+  --bracket-padding {simple,nested}
+                        If nested padding, add speces inside outside brackes
+                        for nested lists/dicts
+  --indent N            Indent N spaces (default=4)
+  --tab-indent          Use tabs to indent
+  --justify-numbers     Right-align numbers with matching precision
+  --prefix-string STRING
+                        String attached to the beginning of every line
+  --align-properties    Align property names of expanded dicts
 ```
 
 ## Format options
 
 The `Formatter` class has the following properties:
 
-#### `json_eol_style`
+### `json_eol_style`
 
 Dictates what sort of line endings to use. `EolStyle.LF` is Unix-style line endings (the default) and `EolStyle.CRLF` Windows-style.
 
-#### `max_inline_length`
+### `max_inline_length`
 
 Maximum length of a complex element on a single line. This includes only the data for the inlined element not indentation or leading property names. The default is 80.
 
-#### `max_inline_complexity`
+### `max_inline_complexity`
 
 Maximum nesting level that can be displayed on a single line. A primitive type or an empty list or dict has a complexity of 0. A dict or list has a complexity of 1 greater than its most complex child. The default is 2.
 
-#### `max_compact_list_complexity`
+### `max_compact_list_complexity`
 
 Maximum nesting level that can be arranged spanning multiple lines, with multiple items per line. The default is 1.
 
-#### `nested_bracket_padding`
+### `nested_bracket_padding`
 
 If an inlined list or dict contains other lists or dicts, setting `nested_bracket_padding` to `True` will include spaces inside the outer brackets. The default is `True`.
 
 See also `simple_bracket_padding`.
 
-#### `simple_bracket_padding`
+### `simple_bracket_padding`
 
 If an inlined list or dict does NOT contain other lists/dicts, setting `simple_bracket_padding` to `True` will include spaces inside the brackets. The default is `False`.
 
 See also `nested_bracket_padding`.
 
-#### `colon_padding`
+### `colon_padding`
 
 If `True` (the default), includes a space after property colons.
 
-#### `comma_padding`
+### `comma_padding`
 
 If `True` (the default), includes a space after commas separating list items and dict properties.
 
-#### `always_expand_depth`
+### `always_expand_depth`
 
 Depth at which lists/dicts are always fully expanded, regardless of other settings
 
@@ -155,31 +178,31 @@ Depth at which lists/dicts are always fully expanded, regardless of other settin
 * 0 = root node only
 * 1 = root node and its children.
 
-#### `indent_spaces`
+### `indent_spaces`
 
 Number of spaces to use per indent level (unless `use_tab_to_indent` is `True`). The default is 4.
 
-#### `use_tab_to_indent`
+### `use_tab_to_indent`
 
 Uses a single tab per indent level, instead of spaces. The default is `False`.
 
-#### `table_dict_minimum_similarity`
+### `table_dict_minimum_similarity`
 
 Value from 0 to 100 indicating how similar collections of inline dicts need to be to be formatted as a table. A group of dicts that don't have any property names in common has a similarity of zero. A group of dicts that all contain the exact same property names has a similarity of 100. Setting this to a value > 100 disables table formatting with dicts as rows. The default is 75.
 
-#### `table_list_minimum_similarity`
+### `table_list_minimum_similarity`
 
 Value from 0 to 100 indicating how similar collections of inline lists need to be to be formatted as a table. Similarity for lists refers to how similar they are in length; if they all have the same length their similarity is 100. Setting this to a value > disables table formatting with lists as rows. The default is 75.
 
-#### `align_expanded_property_names`
+### `align_expanded_property_names`
 
 If `True`, property names of expanded dicts are padded to the same size. The default is `False`.
 
-#### `dont_justify_numbers
+### `dont_justify_numbers
 
 If `True`, numbers won't be right-aligned with matching precision. The default is `False`.
 
-#### `prefix_string`
+### `prefix_string`
 
 String attached to the beginning of every line, before regular indentation.
 
