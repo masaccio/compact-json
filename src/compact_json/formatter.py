@@ -773,7 +773,10 @@ class Formatter:
         # Calculate a score based on how many of all possible properties are present.
         # If the score is too low, these dicts are too different to try to line
         # up as a table.
-        score = 100 * total_prop_count / (len(ordered_props) * len(item.children))
+        try:
+            score = 100 * total_prop_count / (len(ordered_props) * len(item.children))
+        except ZeroDivisionError:
+            return None
         if score < self.table_dict_minimum_similarity:
             return None
 
@@ -810,8 +813,6 @@ class Formatter:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
-        if number_of_columns <= 0:
-            return None
         col_stats_list = [ColumnStats() for x in range(number_of_columns)]
 
         for row_node in item.children:
@@ -821,7 +822,12 @@ class Formatter:
         # Calculate a score based on how rectangular the lists are. If they differ
         # too much in length, it probably doesn't make sense to format them together.
         total_elem_count = sum([len(fn.children) for fn in item.children])
-        similarity = 100 * total_elem_count / (len(item.children) * number_of_columns)
+        try:
+            similarity = (
+                100 * total_elem_count / (len(item.children) * number_of_columns)
+            )
+        except ZeroDivisionError:
+            return None
         if similarity < self.table_list_minimum_similarity:
             return None
 
