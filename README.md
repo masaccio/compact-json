@@ -198,7 +198,7 @@ Value from 0 to 100 indicating how similar collections of inline lists need to b
 
 If `True`, property names of expanded dicts are padded to the same size. The default is `False`.
 
-### `dont_justify_numbers
+### `dont_justify_numbers`
 
 If `True`, numbers won't be right-aligned with matching precision. The default is `False`.
 
