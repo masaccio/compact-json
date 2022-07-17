@@ -4,6 +4,12 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        # "--test-file=tests/data/test-5.ref-1.json",
+        "-o",
+        "log_cli=True",
+        "--log-cli-level=ERROR",
+    ],
     "python.linting.enabled": true,
     "python.linting.pylamaEnabled": true,
     "python.linting.lintOnSave": true,
