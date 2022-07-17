@@ -1,4 +1,5 @@
 from enum import Enum
+from logging import debug
 from typing import List
 from decimal import Decimal, InvalidOperation
 
@@ -13,11 +14,12 @@ class EolStyle(Enum):
 class JsonValueKind(Enum):
     UNDEFINED = 1
     DICT = 2
-    ARRAY = 3
+    LIST = 3
     STRING = 3
-    NUMBER = 4
-    BOOLEAN = 5
-    NULL = 6
+    INT = 4
+    FLOAT = 5
+    BOOLEAN = 6
+    NULL = 7
 
 
 class Format(Enum):
@@ -50,7 +52,7 @@ class FormattedNode:
 
 def _fixed_value(value, num_decimals: int):
     if num_decimals > 0:
-        quantize_str = ("0" * num_decimals) + "1"
+        quantize_str = "0." + ("0" * (num_decimals - 1)) + "1"
     else:
         quantize_str = "0"
 
@@ -64,12 +66,13 @@ class ColumnStats:
     """Used in figuring out how to format properties/list items as columns in a table format."""
 
     def __init__(self):
+        debug("ColumnStats()")
         self.prop_name = ""
         self.prop_name_length = 0
         self.order_sum = 0
         self.count = 0
         self.max_value_size = 0
-        self.is_qualified_numeric = True
+        self.kind = JsonValueKind.NULL
         self.chars_before_dec = 0
         self.chars_after_dec = 0
 
@@ -77,34 +80,54 @@ class ColumnStats:
         """Add stats about this FormattedNode to this PropertyStats."""
         self.order_sum += index
         self.count += 1
+        debug("update()")
+        debug(f"  value={prop_node.value}¶")
+        debug(f"  max_value_size={self.max_value_size}")
+        debug(f"  value_length={prop_node.value_length}")
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
-        self.is_qualified_numeric &= prop_node.kind == JsonValueKind.NUMBER
+        self.kind = prop_node.kind
 
-        if not self.is_qualified_numeric:
-            return
-
-        normalized_num = str(float(prop_node.value))
-        self.is_qualified_numeric &= "e" not in normalized_num
-
-        if not self.is_qualified_numeric:
-            return
-
-        dec_index = normalized_num.find(".")
-        if dec_index < 0:
-            self.chars_before_dec = max([self.chars_before_dec, len(normalized_num)])
-        else:
-            self.chars_before_dec = max([self.chars_before_dec, dec_index])
-            self.chars_after_dec = max(
-                [self.chars_after_dec, len(normalized_num) - dec_index - 1]
-            )
+        if prop_node.kind == JsonValueKind.FLOAT:
+            (whole, frac) = str(prop_node.value).split(".")
+            self.chars_after_dec = max([self.chars_after_dec, len(frac)])
+            self.chars_before_dec = max([self.chars_before_dec, len(whole)])
+            debug(f"  chars_after_dec={self.chars_after_dec}")
+            debug(f"  chars_before_dec={self.chars_before_dec}")
+        elif prop_node.kind == JsonValueKind.INT:
+            self.chars_before_dec = max([self.chars_before_dec, len(prop_node.value)])
+            debug(f"  chars_before_dec={self.chars_before_dec}")
 
     def format_value(self, value: str, value_length: int, dont_justify: bool) -> str:
-        if self.is_qualified_numeric and not dont_justify:
+        debug("format_value()")
+        debug(f"  value={value}¶")
+        debug(f"  value_length={value_length}")
+        debug(
+            "  is_numeric="
+            + str(
+                self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT
+            ).lower()
+        )
+
+        if (
+            self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT
+        ) and not dont_justify:
             adjusted_val = _fixed_value(value, self.chars_after_dec)
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
+            debug(f"  adjusted_val={adjusted_val}")
+            debug(f"  chars_before_dec={self.chars_before_dec}")
+            debug(f"  chars_after_dec={self.chars_after_dec}")
+            debug(f"  total_length={total_length}")
+            debug("  value=" + adjusted_val.rjust(total_length) + "¶")
             return adjusted_val.rjust(total_length)
 
+        debug(f"  max_value_size={self.max_value_size}")
+        debug(f"  len(value)={len(value)}")
+        debug(
+            "  value="
+            + value.ljust(self.max_value_size - (value_length - len(value)))
+            + "¶"
+        )
         return value.ljust(self.max_value_size - (value_length - len(value)))
 
 
@@ -188,7 +211,7 @@ class Formatter:
 
     def __init__(self):
         self.json_eol_style = EolStyle.LF
-        self.max_inline_length = 60
+        self.max_inline_length = 80
         self.max_inline_complexity = 2
         self.max_compact_list_complexity = 1
         self.nested_bracket_padding = True
@@ -246,6 +269,9 @@ class Formatter:
         simple_node = FormattedNode()
         simple_node.value = json.dumps(element)
         simple_node.value_length = len(simple_node.value)
+        debug(
+            f"format_simple: value={simple_node.value}, value_length={simple_node.value_length}"
+        )
         simple_node.complexity = 0
         simple_node.depth = depth
 
@@ -256,7 +282,9 @@ class Formatter:
         if type(element) == bool:
             simple_node.kind = JsonValueKind.BOOLEAN
         elif type(element) == int:
-            simple_node.kind = JsonValueKind.NUMBER
+            simple_node.kind = JsonValueKind.INT
+        elif type(element) == float:
+            simple_node.kind = JsonValueKind.FLOAT
         else:
             simple_node.kind = JsonValueKind.STRING
 
@@ -269,7 +297,7 @@ class Formatter:
             return self.empty_list(depth)
 
         item = FormattedNode()
-        item.kind = JsonValueKind.ARRAY
+        item.kind = JsonValueKind.LIST
         item.complexity = max([fn.complexity for fn in items]) + 1
         item.depth = depth
         item.children = items
@@ -327,10 +355,11 @@ class Formatter:
     def empty_list(self, depth: int) -> FormattedNode:
         arr = FormattedNode()
         arr.value = "[]"
+        debug("empty_list: value_length = 2")
         arr.value_length = 2
         arr.complexity = 0
         arr.depth = depth
-        arr.kind = JsonValueKind.ARRAY
+        arr.kind = JsonValueKind.LIST
         arr.format = Format.INLINE
         return arr
 
@@ -342,11 +371,10 @@ class Formatter:
         if any([fn.format != Format.INLINE for fn in item.children]):
             return False
 
-        use_bracket_padding = (
-            self.nested_bracket_padding
-            if (item.complexity >= 2)
-            else self.simple_bracket_padding
-        )
+        if item.complexity >= 2:
+            use_bracket_padding = self.nested_bracket_padding
+        else:
+            use_bracket_padding = self.simple_bracket_padding
         line_length = 2 + (2 if use_bracket_padding else 0)
         line_length += (len(item.children) - 1) * len(self.padded_comma_str)
         line_length += sum([fn.value_length for fn in item.children])
@@ -371,13 +399,19 @@ class Formatter:
         buffer += "]"
 
         item.value = self.combine(buffer)
+        debug(f"format_list_inline: value_length = {line_length}")
         item.value_length = line_length
         item.format = Format.INLINE
+        if len(item.value) != item.value_length:
+            debug(
+                f"MISMATCH: {len(item.value)} != {item.value_length} value={item.value}"
+            )
         return True
 
     def format_list_multiline_compact(self, item: FormattedNode) -> bool:
         """Try to format this list, spanning multiple lines, but with several items
         per line, if possible."""
+        debug("format_list_multiline_compact()")
         if item.complexity > self.max_compact_list_complexity:
             return False
 
@@ -400,6 +434,10 @@ class Formatter:
                 line_length_so_far + segment_length > self.max_inline_length
                 and line_length_so_far > 0
             ):
+                debug(f"  max_inline_length={self.max_inline_length}")
+                debug(f"  line_length_so_far={line_length_so_far}")
+                debug(f"  segment_length={segment_length}")
+                debug(f"  buffer={buffer}¶")
                 buffer += self.eol_str
                 self.indent(buffer, item.depth + 1)
                 line_length_so_far = 0
@@ -438,6 +476,7 @@ class Formatter:
         return self.format_list_expanded(item)
 
     def format_table_list_list(self, item: FormattedNode) -> bool:
+        debug("format_table_list_list()")
         if self.table_list_minimum_similarity > 100.5:
             return False
 
@@ -459,6 +498,7 @@ class Formatter:
         """Format this list in a single line, with padding to line up with siblings."""
         buffer = ["[ "]
 
+        debug("format_list_table_row()")
         # Write the elements that actually exist in this list.
         for index, child in enumerate(item.children):
             if index:
@@ -473,13 +513,16 @@ class Formatter:
 
         # Write padding for elements that exist in siblings but not this list.
         for index in range(len(item.children), len(column_stats_list)):
+            debug("Write padding for elements that exist")
             pad_size = column_stats_list[index].max_value_size
             pad_size += 0 if index == 0 else len(self.padded_comma_str)
             buffer += " " * pad_size
 
         buffer += " ]"
 
+        debug("...format_list_table_row()")
         item.value = self.combine(buffer)
+        debug(f"  value={item.value}¶")
         item.format = Format.INLINE_TABULAR
 
     def format_list_expanded(self, item: FormattedNode) -> bool:
@@ -524,7 +567,7 @@ class Formatter:
             else self.simple_bracket_padding
         )
 
-        line_length = 2 + 2 if use_bracket_padding else 0
+        line_length = 2 + (2 if use_bracket_padding else 0)
         line_length += len(item.children) * len(self.padded_colon_str)
         line_length += (len(item.children) - 1) * len(self.padded_comma_str)
         line_length += sum([fn.name_length for fn in item.children])
@@ -549,6 +592,7 @@ class Formatter:
         buffer += "}"
 
         item.value = self.combine(buffer)
+        debug(f"format_dict_inline: value_length = {line_length}")
         item.value_length = line_length
         item.format = Format.INLINE
         return True
@@ -574,6 +618,7 @@ class Formatter:
     def format_table_dict_list(self, item: FormattedNode) -> bool:
         """Format this dict with one child list per line, and those lists padded to
         line up nicely."""
+        debug("format_table_dict_list()")
         if self.table_list_minimum_similarity > 100.5:
             return False
 
@@ -648,8 +693,9 @@ class Formatter:
         They might be multiple lines"""
         max_prop_name_length = max([fn.name_length for fn in item.children])
 
-        buffer = ["{", self.eol_str]
+        # debug(f"format_dict_expanded(): max_prop_name_length={max_prop_name_length}")
 
+        buffer = ["{", self.eol_str]
         first_item = True
         for prop in item.children:
             if not first_item:
@@ -679,12 +725,18 @@ class Formatter:
         for prop_node in item_list:
             column_stats.update(prop_node, 0)
 
-        if not column_stats.is_qualified_numeric:
+        if (
+            column_stats.kind != JsonValueKind.INT
+            and column_stats.kind != JsonValueKind.FLOAT
+        ):
             return
 
         for prop_node in item_list:
             prop_node.value = column_stats.format_value(
                 prop_node.value, prop_node.value_length, self.dont_justify_numbers
+            )
+            debug(
+                f"justify_parallel_numbers: value_length = {column_stats.max_value_size}"
             )
             prop_node.value_length = column_stats.max_value_size
 
@@ -750,7 +802,7 @@ class Formatter:
 
         valid = all(
             [
-                fn.kind == JsonValueKind.ARRAY and fn.format == Format.INLINE
+                fn.kind == JsonValueKind.LIST and fn.format == Format.INLINE
                 for fn in item.children
             ]
         )
@@ -758,7 +810,7 @@ class Formatter:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
-        col_stats_list = [ColumnStats()] * number_of_columns
+        col_stats_list = [ColumnStats() for x in range(number_of_columns)]
 
         for row_node in item.children:
             for index, child in enumerate(row_node.children):
