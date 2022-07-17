@@ -1,10 +1,6 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
-# Change this to the name of a code-signing certificate. A self-signed
-# certificate is suitable for this.
-IDENTITY=python@figsandfudge.com
-
 RELEASE_TARBALL=dist/compact-json-$(shell python3 setup.py --version).tar.gz
 
 .PHONY: clean test coverage sdist upload
