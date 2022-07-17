@@ -33,7 +33,7 @@ test:
 	PYTHONPATH=src python3 -m pytest tests
 
 coverage:
-	PYTHONPATH=src python3 -m pytest --cov=compact-json --cov-report=html
+	PYTHONPATH=src python3 -m pytest --cov=compact_json --cov-report=html
 
 clean:
 	rm -rf src/compact_json.egg-info

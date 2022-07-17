@@ -58,7 +58,7 @@ def _fixed_value(value, num_decimals: int):
 
     try:
         return str(Decimal(value).quantize(Decimal(quantize_str)))
-    except InvalidOperation:
+    except InvalidOperation:  # pragma: no cover
         return "*ERROR*"
 
 
