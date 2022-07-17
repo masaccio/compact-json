@@ -29,7 +29,6 @@ def test_json(pytestconfig):
 
         for ref_filename in ref_filenames:
             formatter = Formatter()
-            print(f"\n*** {ref_filename}")
             with open(ref_filename) as f:
                 ref_json = ""
                 for line in f.readlines():
@@ -43,14 +42,4 @@ def test_json(pytestconfig):
             ref_json = ref_json.rstrip()
 
             json_string = formatter.serialize(obj)
-
-            if json_string != ref_json:
-                json_string = re.sub("$", "¶", json_string, flags=re.MULTILINE)
-                ref_json = re.sub("$", "¶", ref_json, flags=re.MULTILINE)
-                print(f"\n*************** {ref_filename}")
-                print("=============== Result ====================")
-                print(json_string)
-                print("\n================= Reference ===============")
-                print(ref_json)
-                print("===========================================\n")
-                assert json_string == ref_json
+            assert json_string == ref_json
