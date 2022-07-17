@@ -10,7 +10,10 @@ def command_line_parser():
     )
     parser.add_argument("-V", "--version", action="store_true")
     parser.add_argument(
-        "--crlf", action="store_true", help="Use Windows-style CRLR line endings"
+        "--crlf",
+        default=False,
+        action="store_true",
+        help="Use Windows-style CRLR line endings",
     )
     parser.add_argument(
         "--max-inline-length",
@@ -24,7 +27,6 @@ def command_line_parser():
         "--max-inline-complexity",
         metavar="N",
         type=int,
-        choices=[0, 1, 2],
         default=2,
         help="Maximum nesting: 0=basic types, 1=dict/list, 2=all (default=2)",
     )
@@ -39,14 +41,17 @@ def command_line_parser():
         "--bracket-padding",
         choices=["simple", "nested"],
         default="nested",
-        help="If nested padding, add speces inside outside brackes for nested lists/dicts",
+        help="If nested padding, add spaces inside outside brackes for nested lists/dicts",
     )
     parser.add_argument(
         "--indent", metavar="N", type=int, default=4, help="Indent N spaces (default=4)"
     )
-    parser.add_argument("--tab-indent", action="store_true", help="Use tabs to indent")
+    parser.add_argument(
+        "--tab-indent", default=False, action="store_true", help="Use tabs to indent"
+    )
     parser.add_argument(
         "--justify-numbers",
+        default=False,
         action="store_true",
         help="Right-align numbers with matching precision",
     )
@@ -57,6 +62,7 @@ def command_line_parser():
     )
     parser.add_argument(
         "--align-properties",
+        default=False,
         action="store_true",
         help="Align property names of expanded dicts",
     )
@@ -82,15 +88,21 @@ def main():
             formatter.max_inline_complexity = args.max_inline_complexity
         if args.max_compact_list_complexity is not None:
             formatter.max_compact_list_complexity = args.max_compact_list_complexity
-        if args.crlf is not None:
+        if args.crlf:
             formatter.json_eol_style = EolStyle.CRLF
-        if args.align_properties is not None:
+        if args.align_properties:
             Formatter.align_expanded_property_names = True
+        if args.bracket_padding == "simple":
+            formatter.nested_bracket_padding = False
+            formatter.simple_bracket_padding = True
+        else:
+            formatter.nested_bracket_padding = True
+            formatter.simple_bracket_padding = False
         if args.indent is not None:
             formatter.indent_spaces = args.indent
-        if args.tab_indent is not None:
+        if args.tab_indent:
             formatter.use_tab_to_indent = True
-        if args.justify_numbers is not None:
+        if not args.justify_numbers:
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
@@ -102,7 +114,7 @@ def main():
             with open(filename, "r") as f:
                 obj = json.load(f)
                 json_string = formatter.serialize(obj)
-                if args.crlf is not None:
+                if args.crlf:
                     print(json_string, end="\r\n")
                 else:
                     print(json_string, end="\n")

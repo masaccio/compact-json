@@ -810,6 +810,8 @@ class Formatter:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
+        if number_of_columns <= 0:
+            return None
         col_stats_list = [ColumnStats() for x in range(number_of_columns)]
 
         for row_node in item.children:
