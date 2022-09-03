@@ -1,4 +1,5 @@
 import pytest
+import re
 
 from compact_json import _get_version
 
@@ -26,7 +27,8 @@ REF_ARG_TEST = """//{
 //		"Jean"     : [ "lightgreen", "yellow"   , "black"        ]
 //	},
 //	"ArrayColumnsArrayRows": [
-//		[ 0.1, 3.5, 10.5, 6.5, 2.5, 0.6 ], [ 0.1, 0.1, 1.2, 2.1, 6.7, 4.4 ], [ 0.4, 1.9, 4.4, 5.4, 2.35, 2.01 ], [ 7.4, 1.2, 0.01, 0.1, 2.91, 0.2 ]
+//		[ 0.1, 3.5, 10.5, 6.5, 2.5, 0.6 ], [ 0.1, 0.1, 1.2, 2.1, 6.7, 4.4 ], [ 0.4, 1.9, 4.4, 5.4, 2.35, 2.01 ], 
+//		[ 7.4, 1.2, 0.01, 0.1, 2.91, 0.2 ]
 //	],
 //	"DissimilarArrayRows": {
 //		"primes"     : [ 2, 3, 5, 7, 11                   ],
@@ -38,7 +40,7 @@ REF_ARG_TEST = """//{
 """
 
 
-def test_args(script_runner):
+def test_args(script_runner, pytestconfig):
     ret = script_runner.run(
         "compact-json",
         "--indent=2",
@@ -53,6 +55,16 @@ def test_args(script_runner):
         "tests/data/test-12.json",
         print_result=False,
     )
+
+    if pytestconfig.getoption("test_verbose") and ret.stdout != REF_ARG_TEST:
+        json_string_dbg = ">" + re.sub(r"\n", "<\n>", ret.stdout) + "<"
+        ref_json_dbg = ">" + re.sub(r"\n", "<\n>", REF_ARG_TEST) + "<"
+        print(f"===== TEST")
+        print(json_string_dbg)
+        print(f"===== REF")
+        print(ref_json_dbg)
+        print(f"=====")
+
     assert ret.success
     assert ret.stdout == REF_ARG_TEST
     assert ret.stderr == ""
