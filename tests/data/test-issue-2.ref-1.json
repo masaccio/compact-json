@@ -1,0 +1,5 @@
+@max_inline_length=48
+[
+    "1234567890abcdefghij", "1234567890abcdefghij", 
+    "1234567890abcdefghij", "1234567890abcdefghij"
+]

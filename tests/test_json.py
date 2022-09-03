@@ -10,15 +10,21 @@ from pathlib import Path
 def test_json(pytestconfig):
     test_data_path = Path("tests/data")
 
+    if pytestconfig.getoption("test_verbose"):
+        print("\n")
+
     if pytestconfig.getoption("test_file") is not None:
         ref_filename = pytestconfig.getoption("test_file")
         source_filenames = [Path(re.sub("\.ref.*", ".json", ref_filename))]
+        if pytestconfig.getoption("test_verbose"):
+            print(f"*** Overriding sourcefiles: {source_filenames}")
     else:
         source_filenames = sorted(test_data_path.rglob("*.json"))
 
     for source_filename in source_filenames:
         if source_filename.match("*.ref*"):
             continue
+
         with open(source_filename) as f:
             obj = json.load(f)
 
@@ -28,6 +34,8 @@ def test_json(pytestconfig):
             ref_filenames = test_data_path.rglob(source_filename.stem + ".ref*")
 
         for ref_filename in ref_filenames:
+            if pytestconfig.getoption("test_verbose"):
+                print(f"*** Testing {ref_filename}")
             formatter = Formatter()
             with open(ref_filename) as f:
                 ref_json = ""
@@ -42,4 +50,14 @@ def test_json(pytestconfig):
             ref_json = ref_json.rstrip()
 
             json_string = formatter.serialize(obj)
+
+            if pytestconfig.getoption("test_verbose") and json_string != ref_json:
+                json_string_dbg = ">" + re.sub(r"\n", "<\n>", json_string) + "<"
+                ref_json_dbg = ">" + re.sub(r"\n", "<\n>", ref_json) + "<"
+                print(f"===== TEST")
+                print(json_string_dbg)
+                print(f"===== REF")
+                print(ref_json_dbg)
+                print(f"=====")
+
             assert json_string == ref_json

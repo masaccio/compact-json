@@ -427,9 +427,10 @@ class Formatter:
             not_last_item = child_index < (len(item.children) - 1)
 
             item_length = item.children[child_index].value_length
-            segment_length = (
-                item_length + len(self.padded_comma_str) if not_last_item else 0
-            )
+            # segment_length = (
+            #     item_length + len(self.padded_comma_str) if not_last_item else 0
+            # )
+            segment_length = item_length + len(self.padded_comma_str)
             if (
                 line_length_so_far + segment_length > self.max_inline_length
                 and line_length_so_far > 0
