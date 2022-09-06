@@ -15,15 +15,16 @@ def test_json(pytestconfig):
 
     if pytestconfig.getoption("test_file") is not None:
         ref_filename = pytestconfig.getoption("test_file")
-        source_filenames = [Path(re.sub("\.ref.*", ".json", ref_filename))]
-        if pytestconfig.getoption("test_verbose"):
-            print(f"*** Overriding sourcefiles: {source_filenames}")
+        source_filenames = [Path(re.sub("[.].ref.*", ".json", ref_filename))]
     else:
         source_filenames = sorted(test_data_path.rglob("*.json"))
 
     for source_filename in source_filenames:
         if source_filename.match("*.ref*"):
             continue
+
+        if pytestconfig.getoption("test_verbose"):
+            print(f"*** Overriding source file: {source_filename}")
 
         with open(source_filename) as f:
             obj = json.load(f)
