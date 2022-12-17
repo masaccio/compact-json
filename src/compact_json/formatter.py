@@ -1,9 +1,10 @@
+import json
+from decimal import Decimal, InvalidOperation
 from enum import Enum
 from logging import debug
 from typing import List
-from decimal import Decimal, InvalidOperation
 
-import json
+from .cells import cell_len
 
 
 class EolStyle(Enum):
@@ -207,6 +208,9 @@ class Formatter:
 
     prefix_string:
         String attached to the beginning of every line, before regular indentation.
+
+    ensure_ascii:
+        Default True, if False, non-ascii characters will not be converted to unicode escape characters.
     """
 
     def __init__(self):
@@ -231,6 +235,7 @@ class Formatter:
         self.padded_comma_str = ""
         self.padded_colon_str = ""
         self.indent_cache = {}
+        self.ensuer_ascii = True
 
     def serialize(self, value) -> str:
         self.init_internals()
@@ -267,8 +272,8 @@ class Formatter:
     def format_simple(self, depth: int, element) -> FormattedNode:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
-        simple_node.value = json.dumps(element)
-        simple_node.value_length = len(simple_node.value)
+        simple_node.value = json.dumps(element,ensure_ascii=self.ensuer_ascii)
+        simple_node.value_length = cell_len(simple_node.value)
         debug(
             f"format_simple: value={simple_node.value}, value_length={simple_node.value_length}"
         )
@@ -326,8 +331,8 @@ class Formatter:
         items = []
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            elem.name = json.dumps(k)
-            elem.name_length = len(elem.name)
+            elem.name = json.dumps(k,ensure_ascii=self.ensuer_ascii)
+            elem.name_length = cell_len(elem.name)
             items.append(elem)
 
         if len(items) == 0:
