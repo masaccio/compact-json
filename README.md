@@ -130,6 +130,7 @@ optional arguments:
   --prefix-string STRING
                         String attached to the beginning of every line
   --align-properties    Align property names of expanded dicts
+  --unicode             Treat strings as unicode East Asian characters
 ```
 
 ## Format options
@@ -207,6 +208,10 @@ If `True`, numbers won't be right-aligned with matching precision. The default i
 ### `prefix_string`
 
 String attached to the beginning of every line, before regular indentation.
+
+### `east_asian_string_widths`
+
+If `True`, format strings using unicodedata.east_asian_width rather than simple string lengths
 
 ## Credits
 
