@@ -1,6 +1,8 @@
 # compact-json
 
-[![build:](https://travis-ci.com/masaccio/compact-json.svg?branch=main)](https://app.travis-ci.com/github/masaccio/compact-json)
+[![build:](https://github.com/masaccio/compact-json/actions/workflows/run-all-tests.yml/badge.svg)](https://github.com/masaccio/compact-json/actions/workflows/run-all-tests.yml)
+[![build:](https://github.com/masaccio/compact-json/actions/workflows/codeql.yml/badge.svg)](https://github.com/masaccio/compact-json/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/masaccio/compact-json/branch/main/graph/badge.svg?token=EKIUFGT05E)](https://codecov.io/gh/masaccio/compact-json)
 
 `compact-json` is a JSON formatter that produces configurably compact JSON that remains human-readable.
 
