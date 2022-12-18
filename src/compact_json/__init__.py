@@ -1,8 +1,10 @@
 __doc__ = """
 """
+import importlib.metadata
 
 from compact_json.formatter import Formatter, EolStyle
-from compact_json._version import __version__
+
+__version__ = importlib.metadata.version("compact-json")
 
 
 def _get_version():
