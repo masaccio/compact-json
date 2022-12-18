@@ -82,7 +82,7 @@ def command_line_parser():
     return parser
 
 
-def main():
+def main():  # noqa: C901
     parser = command_line_parser()
     args = parser.parse_args()
 

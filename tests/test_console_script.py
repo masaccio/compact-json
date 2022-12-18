@@ -66,11 +66,11 @@ def test_args(script_runner, pytestconfig):
     if pytestconfig.getoption("test_verbose") and ret.stdout != REF_ARG_TEST:
         json_string_dbg = ">" + re.sub(r"\n", "<\n>", ret.stdout) + "<"
         ref_json_dbg = ">" + re.sub(r"\n", "<\n>", REF_ARG_TEST) + "<"
-        print(f"===== TEST")
+        print("===== TEST")
         print(json_string_dbg)
-        print(f"===== REF")
+        print("===== REF")
         print(ref_json_dbg)
-        print(f"=====")
+        print("=====")
 
     assert ret.stderr == ""
     assert ret.success
