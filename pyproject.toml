@@ -38,7 +38,7 @@ branch = true
 directory = "coverage_html_report"
 
 [tool.pytest.ini_options]
-addopts = "--cov=compact-json"
+addopts = "--cov=src/compact_json"
 
 [tool.tox]
 legacy_tox_ini = """
