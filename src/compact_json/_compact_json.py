@@ -1,7 +1,8 @@
-from compact_json import Formatter, EolStyle, _get_version
-
 import argparse
 import json
+import logging
+
+from compact_json import EolStyle, Formatter, _get_version
 
 
 def command_line_parser():
@@ -66,13 +67,22 @@ def command_line_parser():
         action="store_true",
         help="Align property names of expanded dicts",
     )
+    parser.add_argument(
+        "--unicode",
+        default=False,
+        action="store_true",
+        help="Treat strings as unicode East Asian characters",
+    )
+    parser.add_argument(
+        "--debug", default=False, action="store_true", help="Enable debug logging"
+    )
 
     parser.add_argument("json", nargs="*", help="JSON file(s) to dump")
 
     return parser
 
 
-def main():
+def main():  # noqa: C901
     parser = command_line_parser()
     args = parser.parse_args()
 
@@ -106,6 +116,12 @@ def main():
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
+        if args.unicode is not None:
+            formatter.east_asian_string_widths = True
+        if args.debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+        else:
+            logging.getLogger().setLevel(logging.ERROR)
 
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50

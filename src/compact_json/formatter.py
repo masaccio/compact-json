@@ -3,8 +3,7 @@ from decimal import Decimal, InvalidOperation
 from enum import Enum
 from logging import debug
 from typing import List
-
-from .cells import cell_len
+from unicodedata import east_asian_width
 
 
 class EolStyle(Enum):
@@ -49,6 +48,26 @@ class FormattedNode:
             self.children = []
         for child in self.children:
             child.children = []
+
+
+# From https://github.com/ncm2/ncm2
+# Copyright © 2018 roxma@qq.com
+def char_display_width(unicode_str):
+    r = east_asian_width(unicode_str)
+    if r == "F":  # Fullwidth
+        return 1
+    elif r == "H":  # Half-width
+        return 1
+    elif r == "W":  # Wide
+        return 2
+    elif r == "Na":  # Narrow
+        return 1
+    elif r == "A":  # Ambiguous, go with 2
+        return 1
+    elif r == "N":  # Neutral
+        return 1
+    else:
+        return 1
 
 
 def _fixed_value(value, num_decimals: int):
@@ -211,6 +230,10 @@ class Formatter:
 
     ensure_ascii:
         Default True, if False, non-ascii characters will not be converted to unicode escape characters.
+
+    east_asian_string_widths
+        If True, format strings using unicodedata.east_asian_width rather than simple
+        string lengths
     """
 
     def __init__(self):
@@ -235,7 +258,8 @@ class Formatter:
         self.padded_comma_str = ""
         self.padded_colon_str = ""
         self.indent_cache = {}
-        self.ensuer_ascii = True
+        self.ensure_ascii = True
+        self.east_asian_string_widths = False
 
     def serialize(self, value) -> str:
         self.init_internals()
@@ -257,6 +281,13 @@ class Formatter:
     def combine(self, buffer: List[str]) -> str:
         return "".join(buffer)
 
+    def string_length(self, s):
+        if self.east_asian_string_widths:
+            length = sum([char_display_width(c) for c in s])
+            return length
+        else:
+            return len(s)
+
     def format_element(self, depth: int, element) -> FormattedNode:
         """Base of recursion. Nearly everything comes through here."""
         if type(element) == list:
@@ -272,8 +303,8 @@ class Formatter:
     def format_simple(self, depth: int, element) -> FormattedNode:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
-        simple_node.value = json.dumps(element,ensure_ascii=self.ensuer_ascii)
-        simple_node.value_length = cell_len(simple_node.value)
+        simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
+        simple_node.value_length = self.string_length(simple_node.value)
         debug(
             f"format_simple: value={simple_node.value}, value_length={simple_node.value_length}"
         )
@@ -331,8 +362,8 @@ class Formatter:
         items = []
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            elem.name = json.dumps(k,ensure_ascii=self.ensuer_ascii)
-            elem.name_length = cell_len(elem.name)
+            elem.name = json.dumps(k,ensure_ascii=self.ensure_ascii)
+            elem.name_length = self.string_length(elem.name)
             items.append(elem)
 
         if len(items) == 0:

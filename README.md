@@ -1,6 +1,8 @@
 # compact-json
 
-[![build:](https://travis-ci.com/masaccio/compact-json.svg?branch=main)](https://app.travis-ci.com/github/masaccio/compact-json)
+[![build:](https://github.com/masaccio/compact-json/actions/workflows/run-all-tests.yml/badge.svg)](https://github.com/masaccio/compact-json/actions/workflows/run-all-tests.yml)
+[![build:](https://github.com/masaccio/compact-json/actions/workflows/codeql.yml/badge.svg)](https://github.com/masaccio/compact-json/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/masaccio/compact-json/branch/main/graph/badge.svg?token=EKIUFGT05E)](https://codecov.io/gh/masaccio/compact-json)
 
 `compact-json` is a JSON formatter that produces configurably compact JSON that remains human-readable.
 
@@ -128,6 +130,7 @@ optional arguments:
   --prefix-string STRING
                         String attached to the beginning of every line
   --align-properties    Align property names of expanded dicts
+  --unicode             Treat strings as unicode East Asian characters
 ```
 
 ## Format options
@@ -205,6 +208,10 @@ If `True`, numbers won't be right-aligned with matching precision. The default i
 ### `prefix_string`
 
 String attached to the beginning of every line, before regular indentation.
+
+### `east_asian_string_widths`
+
+If `True`, format strings using unicodedata.east_asian_width rather than simple string lengths
 
 ## Credits
 
