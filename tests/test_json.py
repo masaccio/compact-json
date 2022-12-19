@@ -1,5 +1,3 @@
-import pytest
-import pytest_check as check
 import json
 import re
 
@@ -15,7 +13,7 @@ def test_json(pytestconfig):
 
     if pytestconfig.getoption("test_file") is not None:
         ref_filename = pytestconfig.getoption("test_file")
-        source_filenames = [Path(re.sub("[.].ref.*", ".json", ref_filename))]
+        source_filenames = [Path(re.sub(r"[.]ref.*", ".json", ref_filename))]
     else:
         source_filenames = sorted(test_data_path.rglob("*.json"))
 
@@ -42,7 +40,7 @@ def test_json(pytestconfig):
                 ref_json = ""
                 for line in f.readlines():
                     if line.startswith("@"):
-                        (param, value) = line[1:].split("=")
+                        (param, value) = re.split(r"\s*=\s*", line[1:])
                         value = value.strip()
                         exec(f"formatter.{param} = {value}")
                     else:
@@ -55,10 +53,10 @@ def test_json(pytestconfig):
             if pytestconfig.getoption("test_verbose") and json_string != ref_json:
                 json_string_dbg = ">" + re.sub(r"\n", "<\n>", json_string) + "<"
                 ref_json_dbg = ">" + re.sub(r"\n", "<\n>", ref_json) + "<"
-                print(f"===== TEST")
+                print("===== TEST")
                 print(json_string_dbg)
-                print(f"===== REF")
+                print("===== REF")
                 print(ref_json_dbg)
-                print(f"=====")
+                print("=====")
 
             assert json_string == ref_json

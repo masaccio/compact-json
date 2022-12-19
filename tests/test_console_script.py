@@ -39,13 +39,12 @@ REF_ARG_TEST = """//{
 //}
 """
 
-REF_UNICODE_TEST = """[
-    { "name": "Alice" , "age": "17"    , "occupation": "student"  },
-    { "name": "Angela", "age": "42"    , "occupation": "Anwältin" },
-    { "name": "张三"  , "age": "十七"  , "occupation": "学生"     },
-    { "name": "依诺成", "age": "三十五", "occupation": "工程师"   }
+REF_UNICODE_TEST = [
+    '        { "name": "Alice" , "age": "17"    , "occupation": "student"  },',
+    '        { "name": "Angela", "age": "42"    , "occupation": "Anwältin" },',
+    '        { "name": "张三"  , "age": "十七"  , "occupation": "学生"     },',
+    '        { "name": "依诺成", "age": "三十五", "occupation": "工程师"   }',
 ]
-"""
 
 
 def test_args(script_runner, pytestconfig):
@@ -80,11 +79,13 @@ def test_args(script_runner, pytestconfig):
 def test_unicode(script_runner, pytestconfig):
     ret = script_runner.run(
         "compact-json",
-        "--unicode",
+        "--east-asian-chars",
+        "--no-ensure-ascii",
         "--max-inline-length=120",
         "tests/data/test-issue-4.json",
         print_result=False,
     )
     assert ret.stderr == ""
     assert ret.success
-    assert ret.stdout == REF_UNICODE_TEST
+    data = ret.stdout.split("\n")
+    assert data[2:6] == REF_UNICODE_TEST

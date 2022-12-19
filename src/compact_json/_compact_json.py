@@ -68,10 +68,16 @@ def command_line_parser():
         help="Align property names of expanded dicts",
     )
     parser.add_argument(
-        "--unicode",
+        "--east-asian-chars",
         default=False,
         action="store_true",
         help="Treat strings as unicode East Asian characters",
+    )
+    parser.add_argument(
+        "--no-ensure-ascii",
+        default=False,
+        action="store_true",
+        help="Characters will be output as-is without ASCII conversion",
     )
     parser.add_argument(
         "--debug", default=False, action="store_true", help="Enable debug logging"
@@ -116,8 +122,10 @@ def main():  # noqa: C901
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
-        if args.unicode is not None:
+        if args.east_asian_chars is not None:
             formatter.east_asian_string_widths = True
+        if args.no_ensure_ascii is not None:
+            formatter.ensure_ascii = False
         if args.debug:
             logging.getLogger().setLevel(logging.DEBUG)
         else:
