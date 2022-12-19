@@ -7,6 +7,15 @@ from logging import debug
 from typing import List
 from wcwidth import wcswidth
 
+from .cells import get_character_cell_size
+
+
+def get_string_size(s):
+    length = 0
+    for c in s:
+        length += get_character_cell_size(c)
+    return length
+
 
 class EolStyle(Enum):
     CRLF = 1
@@ -282,6 +291,7 @@ class Formatter:
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
         # simple_node.value_length = self.string_length(simple_node.value)
         simple_node.value_length = wcswidth(simple_node.value)
+        assert get_string_size(simple_node.value) == simple_node.value_length
         debug(
             f"format_simple: value=%s, value_length=%d",
             simple_node.value,
@@ -343,6 +353,7 @@ class Formatter:
             elem = self.format_element(depth + 1, v)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             elem.name_length = wcswidth(elem.name)
+            assert get_string_size(elem.name) == elem.name_length
             items.append(elem)
 
         if len(items) == 0:
