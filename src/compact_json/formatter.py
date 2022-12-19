@@ -289,14 +289,11 @@ class Formatter:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
-        # simple_node.value_length = self.string_length(simple_node.value)
-        simple_node.value_length = wcswidth(simple_node.value)
-        assert get_string_size(simple_node.value) == simple_node.value_length
-        debug(
-            f"format_simple: value=%s, value_length=%d",
-            simple_node.value,
-            simple_node.value_length,
-        )
+        if self.east_asian_string_widths:
+            simple_node.value_length = wcswidth(simple_node.value)
+            assert get_string_size(simple_node.value) == simple_node.value_length
+        else:
+            simple_node.value_length = len(simple_node.value)
         simple_node.complexity = 0
         simple_node.depth = depth
 
@@ -352,8 +349,11 @@ class Formatter:
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
-            elem.name_length = wcswidth(elem.name)
-            assert get_string_size(elem.name) == elem.name_length
+            if self.east_asian_string_widths:
+                elem.name_length = wcswidth(elem.name)
+                assert get_string_size(elem.name) == elem.name_length
+            else:
+                elem.name_length = len(elem.name)
             items.append(elem)
 
         if len(items) == 0:
