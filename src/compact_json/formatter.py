@@ -1,20 +1,10 @@
 import json
-import unicodedata
 
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from logging import debug
 from typing import List
 from wcwidth import wcswidth
-
-from .cells import get_character_cell_size
-
-
-def get_string_size(s):
-    length = 0
-    for c in s:
-        length += get_character_cell_size(c)
-    return length
 
 
 class EolStyle(Enum):
@@ -291,7 +281,6 @@ class Formatter:
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
         if self.east_asian_string_widths:
             simple_node.value_length = wcswidth(simple_node.value)
-            assert get_string_size(simple_node.value) == simple_node.value_length
         else:
             simple_node.value_length = len(simple_node.value)
         simple_node.complexity = 0
@@ -351,7 +340,6 @@ class Formatter:
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             if self.east_asian_string_widths:
                 elem.name_length = wcswidth(elem.name)
-                assert get_string_size(elem.name) == elem.name_length
             else:
                 elem.name_length = len(elem.name)
             items.append(elem)
