@@ -1,29 +1,18 @@
 {
-    "version": "0.2.0", 
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File", 
-            "type": "python", 
-            "request": "launch", 
-            "program": "${file}", 
-            "console": "integratedTerminal", 
-            "args": [
-                "--no-ensure-ascii"            , 
-                "--east-asian-chars"           , 
-                "--max-inline-length=150"      , 
-                "--debug"                      , 
-                "tests/data/test-issue-4a.json"  
-            ], 
-            "justMyCode": true
-        }, 
-        {
-            "name": "Debug Tests", 
-            "type": "python", 
-            "request": "test", 
-            "program": "${file}", 
-            "console": "integratedTerminal", 
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
             "env": {"PYTEST_ADDOPTS": "--no-cov"}, 
-            "justMyCode": true
-        }
+            "justMyCode": false
+          }
     ]
 }
