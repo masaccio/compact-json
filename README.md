@@ -209,6 +209,10 @@ If `True`, numbers won't be right-aligned with matching precision. The default i
 
 String attached to the beginning of every line, before regular indentation.
 
+### `ensure_ascii`
+
+If `True` (the default), the output is guaranteed to have all incoming non-ASCII characters escaped. If `ensure_ascii` is `False`, these characters will be output as-is.
+
 ### `east_asian_string_widths`
 
 If `True`, format strings using unicodedata.east_asian_width rather than simple string lengths
