@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 
 from decimal import Decimal, InvalidOperation
@@ -132,6 +133,7 @@ class ColumnStats:
         return value.ljust(self.max_value_size - (value_length - len(value)))
 
 
+@dataclass
 class Formatter:
     """
     Class that outputs JSON formatted in a compact, user-readable way. Any given container
@@ -218,30 +220,31 @@ class Formatter:
         than simple string lengths
     """
 
-    def __init__(self):
-        self.json_eol_style = EolStyle.LF
-        self.max_inline_length = 80
-        self.max_inline_complexity = 2
-        self.max_compact_list_complexity = 1
-        self.nested_bracket_padding = True
-        self.simple_bracket_padding = False
-        self.colon_padding = True
-        self.comma_padding = True
-        self.always_expand_depth = -1
-        self.indent_spaces = 4
-        self.use_tab_to_indent = False
-        self.table_dict_minimum_similarity = 75
-        self.table_list_minimum_similarity = 75
-        self.align_expanded_property_names = False
-        self.dont_justify_numbers = False
-        self.prefix_string = ""
+    json_eol_style:EolStyle = EolStyle.LF
+    max_inline_length:int = 80
+    max_inline_complexity:int = 2
+    max_compact_list_complexity:int = 1
+    nested_bracket_padding:bool = True
+    simple_bracket_padding:bool = False
+    colon_padding:bool = True
+    comma_padding:bool = True
+    always_expand_depth:int = -1
+    indent_spaces:int = 4
+    use_tab_to_indent:bool = False
+    table_dict_minimum_similarity:int = 75
+    table_list_minimum_similarity:int = 75
+    align_expanded_property_names:bool = False
+    dont_justify_numbers:bool = False
+    prefix_string:bool = ""
+    ensure_ascii:bool = True
+    east_asian_string_widths:bool = False
+
+    def __post_init__(self):
         self.eol_str = ""
         self.indent_str = ""
         self.padded_comma_str = ""
         self.padded_colon_str = ""
         self.indent_cache = {}
-        self.ensure_ascii = True
-        self.east_asian_string_widths = False
 
     def serialize(self, value) -> str:
         self.init_internals()
