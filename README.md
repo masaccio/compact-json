@@ -91,7 +91,7 @@ with open("input.json", "r") as f:
     print(json_string)
 ```
 
-## Runtime warnings
+## Runtime warnings
 
 Unlike the builtin `json` package, `compact-json` will issue runtime warnings when dictionary keys are forced to strings or skipped to ensure that the resulting JSON is well-formed:
 
