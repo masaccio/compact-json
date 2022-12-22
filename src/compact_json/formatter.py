@@ -220,24 +220,24 @@ class Formatter:
         than simple string lengths
     """
 
-    json_eol_style:EolStyle = EolStyle.LF
-    max_inline_length:int = 80
-    max_inline_complexity:int = 2
-    max_compact_list_complexity:int = 1
-    nested_bracket_padding:bool = True
-    simple_bracket_padding:bool = False
-    colon_padding:bool = True
-    comma_padding:bool = True
-    always_expand_depth:int = -1
-    indent_spaces:int = 4
-    use_tab_to_indent:bool = False
-    table_dict_minimum_similarity:int = 75
-    table_list_minimum_similarity:int = 75
-    align_expanded_property_names:bool = False
-    dont_justify_numbers:bool = False
-    prefix_string:bool = ""
-    ensure_ascii:bool = True
-    east_asian_string_widths:bool = False
+    json_eol_style: EolStyle = EolStyle.LF
+    max_inline_length: int = 80
+    max_inline_complexity: int = 2
+    max_compact_list_complexity: int = 1
+    nested_bracket_padding: bool = True
+    simple_bracket_padding: bool = False
+    colon_padding: bool = True
+    comma_padding: bool = True
+    always_expand_depth: int = -1
+    indent_spaces: int = 4
+    use_tab_to_indent: bool = False
+    table_dict_minimum_similarity: int = 75
+    table_list_minimum_similarity: int = 75
+    align_expanded_property_names: bool = False
+    dont_justify_numbers: bool = False
+    prefix_string: bool = ""
+    ensure_ascii: bool = True
+    east_asian_string_widths: bool = False
 
     def __post_init__(self):
         self.eol_str = ""
@@ -340,7 +340,7 @@ class Formatter:
         items = []
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
+            elem.name = json.dumps(str(k), ensure_ascii=self.ensure_ascii)
             if self.east_asian_string_widths:
                 elem.name_length = wcswidth(elem.name)
             else:
