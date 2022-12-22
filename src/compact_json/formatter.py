@@ -793,7 +793,7 @@ class Formatter:
         # up as a table.
         try:
             score = 100 * total_prop_count / (len(ordered_props) * len(item.children))
-        except ZeroDivisionError:
+        except ZeroDivisionError:  # pragma: no cover
             return None
         if score < self.table_dict_minimum_similarity:
             return None
@@ -844,7 +844,7 @@ class Formatter:
             similarity = (
                 100 * total_elem_count / (len(item.children) * number_of_columns)
             )
-        except ZeroDivisionError:
+        except ZeroDivisionError:  # pragma: no cover
             return None
         if similarity < self.table_list_minimum_similarity:
             return None
