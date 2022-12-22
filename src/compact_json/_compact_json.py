@@ -118,7 +118,7 @@ def main():  # noqa: C901
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
-        formatter.east_asian_string_widths = args.east_asian_chars 
+        formatter.east_asian_string_widths = args.east_asian_chars
         formatter.ensure_ascii = not args.no_ensure_ascii
 
         if args.debug:
@@ -139,6 +139,6 @@ def main():  # noqa: C901
                     print(json_string, end="\n")
 
 
-if __name__ == "__main__": # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     # execute only if run as a script
     main()

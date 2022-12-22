@@ -62,7 +62,10 @@ def _fixed_value(value, num_decimals: int):
     try:
         return str(Decimal(value).quantize(Decimal(quantize_str)))
     except InvalidOperation:  # pragma: no cover
-        return "*ERROR*"
+        warnings.warn(
+            f"handled quantize error (please report an issue)", RuntimeWarning
+        )
+        return "0"
 
 
 class ColumnStats:
@@ -395,7 +398,12 @@ class Formatter:
         if item.complexity > self.max_inline_complexity:
             return False
 
-        if any([fn.format != Format.INLINE for fn in item.children]):
+        if any(
+            [fn.format != Format.INLINE for fn in item.children]
+        ):  # pragma: no cover
+            warnings.warn(
+                f"list elements not inline (please report an issue)", RuntimeWarning
+            )
             return False
 
         if item.complexity >= 2:
@@ -429,10 +437,6 @@ class Formatter:
         debug(f"format_list_inline: value_length = {line_length}")
         item.value_length = line_length
         item.format = Format.INLINE
-        if len(item.value) != item.value_length:
-            debug(
-                f"MISMATCH: {len(item.value)} != {item.value_length} value={item.value}"
-            )
         return True
 
     def format_list_multiline_compact(self, item: FormattedNode) -> bool:
@@ -442,7 +446,12 @@ class Formatter:
         if item.complexity > self.max_compact_list_complexity:
             return False
 
-        if any([fn.format != Format.INLINE for fn in item.children]):
+        if any(
+            [fn.format != Format.INLINE for fn in item.children]
+        ):  # pragma: no cover
+            warnings.warn(
+                f"list elements not inline (please report an issue)", RuntimeWarning
+            )
             return False
 
         buffer = ["[", self.eol_str]
@@ -454,9 +463,6 @@ class Formatter:
             not_last_item = child_index < (len(item.children) - 1)
 
             item_length = item.children[child_index].value_length
-            # segment_length = (
-            #     item_length + len(self.padded_comma_str) if not_last_item else 0
-            # )
             segment_length = item_length + len(self.padded_comma_str)
             if (
                 line_length_so_far + segment_length > self.max_inline_length
@@ -802,6 +808,7 @@ class Formatter:
         try:
             score = 100 * total_prop_count / (len(ordered_props) * len(item.children))
         except ZeroDivisionError:  # pragma: no cover
+            warnings.warn(f"handled div/0 (please report an issue)", RuntimeWarning)
             return None
         if score < self.table_dict_minimum_similarity:
             return None
@@ -853,6 +860,7 @@ class Formatter:
                 100 * total_elem_count / (len(item.children) * number_of_columns)
             )
         except ZeroDivisionError:  # pragma: no cover
+            warnings.warn(f"handled div/0 (please report an issue)", RuntimeWarning)
             return None
         if similarity < self.table_list_minimum_similarity:
             return None
