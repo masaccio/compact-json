@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import json
+import warnings
 
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from logging import debug
@@ -338,9 +339,18 @@ class Formatter:
     def format_dict(self, depth: int, element: dict) -> FormattedNode:
         # Recursively format all of this dict's property values.
         items = []
+        keys = {}
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            elem.name = json.dumps(str(k), ensure_ascii=self.ensure_ascii)
+            if type(k) != str:
+                warnings.warn(f"coercing key value {k} to string", RuntimeWarning)
+            k = str(k)
+            if k in keys:
+                warnings.warn(f"skipping duplicate key value {k}", RuntimeWarning)
+                continue
+            keys[k] = True
+
+            elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             if self.east_asian_string_widths:
                 elem.name_length = wcswidth(elem.name)
             else:
@@ -710,8 +720,6 @@ class Formatter:
         """Write this dict with each element starting on its own line.
         They might be multiple lines"""
         max_prop_name_length = max([fn.name_length for fn in item.children])
-
-        # debug(f"format_dict_expanded(): max_prop_name_length={max_prop_name_length}")
 
         buffer = ["{", self.eol_str]
         first_item = True
