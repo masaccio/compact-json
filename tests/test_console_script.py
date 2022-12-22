@@ -39,12 +39,18 @@ REF_ARG_TEST = """//{
 //}
 """
 
-REF_UNICODE_TEST = [
-    '        { "name": "Alice" , "age": "17"    , "occupation": "student"  },',
-    '        { "name": "Angela", "age": "42"    , "occupation": "Anwältin" },',
-    '        { "name": "张三"  , "age": "十七"  , "occupation": "学生"     },',
-    '        { "name": "依诺成", "age": "三十五", "occupation": "工程师"   }',
-]
+REF_UNICODE_TEST = """{
+    "Thai": {
+        "Abkhazia": "อับฮาเซีย",
+        "Afghanistan": "อัฟกานิสถาน",
+        "Albania": "แอลเบเนีย"
+    },
+    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"},
+    "Uyghur": {"Albania": "ئالبانىيە"},
+    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"},
+    "Western Armenian": {"Albania": "Ալբանիա"}
+}
+"""
 
 
 def test_args(script_runner, pytestconfig):
@@ -76,16 +82,28 @@ def test_args(script_runner, pytestconfig):
     assert ret.stdout == REF_ARG_TEST
 
 
-def test_unicode(script_runner, pytestconfig):
+def test_unicode(script_runner):
     ret = script_runner.run(
         "compact-json",
         "--east-asian-chars",
         "--no-ensure-ascii",
-        "--max-inline-length=120",
-        "tests/data/test-issue-4.json",
+        "--crlf",
+        "tests/data/test-issue-4a.json",
         print_result=False,
     )
     assert ret.stderr == ""
     assert ret.success
-    data = ret.stdout.split("\n")
-    assert data[2:6] == REF_UNICODE_TEST
+    ref = REF_UNICODE_TEST.replace("\n", "\r\n")
+    assert ret.stdout == ref
+
+def test_help(script_runner):
+    ret = script_runner.run("compact-json")
+    assert ret.stderr == ""
+    assert ret.success
+    assert "[--prefix-string STRING] [--align-properties]" in ret.stdout
+
+def test_debug(script_runner):
+    ret = script_runner.run("compact-json", "--debug", "tests/data/test-1.json")
+    assert "DEBUG:root:format_table_dict_list" in ret.stderr
+    assert ret.success
+    assert '"title": "Sample Konfabulator Widget"' in ret.stdout

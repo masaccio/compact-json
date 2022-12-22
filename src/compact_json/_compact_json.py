@@ -98,12 +98,10 @@ def main():  # noqa: C901
         parser.print_help()
     else:
         formatter = Formatter()
-        if args.max_inline_length is not None:
-            formatter.max_inline_length = args.max_inline_length
-        if args.max_inline_complexity is not None:
-            formatter.max_inline_complexity = args.max_inline_complexity
-        if args.max_compact_list_complexity is not None:
-            formatter.max_compact_list_complexity = args.max_compact_list_complexity
+        formatter.max_inline_length = args.max_inline_length
+        formatter.max_inline_complexity = args.max_inline_complexity
+        formatter.max_compact_list_complexity = args.max_compact_list_complexity
+        formatter.indent_spaces = args.indent
         if args.crlf:
             formatter.json_eol_style = EolStyle.CRLF
         if args.align_properties:
@@ -114,18 +112,15 @@ def main():  # noqa: C901
         else:
             formatter.nested_bracket_padding = True
             formatter.simple_bracket_padding = False
-        if args.indent is not None:
-            formatter.indent_spaces = args.indent
         if args.tab_indent:
             formatter.use_tab_to_indent = True
         if not args.justify_numbers:
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
-        if args.east_asian_chars is not None:
-            formatter.east_asian_string_widths = True
-        if args.no_ensure_ascii is not None:
-            formatter.ensure_ascii = False
+        formatter.east_asian_string_widths = args.east_asian_chars 
+        formatter.ensure_ascii = not args.no_ensure_ascii
+
         if args.debug:
             logging.getLogger().setLevel(logging.DEBUG)
         else:
@@ -144,6 +139,6 @@ def main():  # noqa: C901
                     print(json_string, end="\n")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     # execute only if run as a script
     main()
