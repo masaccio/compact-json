@@ -104,7 +104,7 @@ Unlike the builtin `json` package, `compact-json` will issue runtime warnings wh
   warnings.warn(f"converting key value {k} to string", RuntimeWarning)
 /path/src/compact_json/formatter.py:346: RuntimeWarning: coercing key value 300 to string
   warnings.warn(f"converting key value {k} to string", RuntimeWarning)
-/path/src/compact_json/formatter.py:349: RuntimeWarning: skipping duplicate key value 100
+/path/src/compact_json/formatter.py:349: RuntimeWarning: duplicate key value 100
   warnings.warn(f"duplicate key value {k}", RuntimeWarning)
 '{ "100": "mary", "200": "had", "300": ["a", "little", "lamb"] }'
 ```
