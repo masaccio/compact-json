@@ -346,19 +346,19 @@ class Formatter:
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
             if type(k) != str:
-                warnings.warn(f"coercing key value {k} to string", RuntimeWarning)
+                warnings.warn(f"converting key value {k} to string", RuntimeWarning)
             k = str(k)
-            if k in keys:
-                warnings.warn(f"skipping duplicate key value {k}", RuntimeWarning)
-                continue
-            keys[k] = True
-
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             if self.east_asian_string_widths:
                 elem.name_length = wcswidth(elem.name)
             else:
                 elem.name_length = len(elem.name)
-            items.append(elem)
+            if k in keys:
+                warnings.warn(f"duplicate key value {k}", RuntimeWarning)
+                items[keys[k]] = elem
+            else:
+                keys[k] = len(items)
+                items.append(elem)
 
         if len(items) == 0:
             return self.empty_dict(depth)
@@ -859,8 +859,7 @@ class Formatter:
             similarity = (
                 100 * total_elem_count / (len(item.children) * number_of_columns)
             )
-        except ZeroDivisionError:  # pragma: no cover
-            warnings.warn(f"handled div/0 (please report an issue)", RuntimeWarning)
+        except ZeroDivisionError:
             return None
         if similarity < self.table_list_minimum_similarity:
             return None

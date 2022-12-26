@@ -93,19 +93,19 @@ with open("input.json", "r") as f:
 
 ## Runtime warnings
 
-Unlike the builtin `json` package, `compact-json` will issue runtime warnings when dictionary keys are forced to strings or skipped to ensure that the resulting JSON is well-formed:
+Unlike the builtin `json` package, `compact-json` will issue runtime warnings when dictionary keys are forced to strings or overwritten to ensure that the resulting JSON is well-formed:
 
 ``` python
 >>> from compact_json import Formatter
->>> Formatter().serialize({100: "mary", 200: "had", 300: ["a", "little", "lamb"], "100": "error"})
+>>> Formatter().serialize({100: "error", 200: "had", 300: ["a", "little", "lamb"], "100": "mary"})
 /path/src/compact_json/formatter.py:346: RuntimeWarning: coercing key value 100 to string
-  warnings.warn(f"coercing key value {k} to string", RuntimeWarning)
+  warnings.warn(f"converting key value {k} to string", RuntimeWarning)
 /path/src/compact_json/formatter.py:346: RuntimeWarning: coercing key value 200 to string
-  warnings.warn(f"coercing key value {k} to string", RuntimeWarning)
+  warnings.warn(f"converting key value {k} to string", RuntimeWarning)
 /path/src/compact_json/formatter.py:346: RuntimeWarning: coercing key value 300 to string
-  warnings.warn(f"coercing key value {k} to string", RuntimeWarning)
+  warnings.warn(f"converting key value {k} to string", RuntimeWarning)
 /path/src/compact_json/formatter.py:349: RuntimeWarning: skipping duplicate key value 100
-  warnings.warn(f"skipping duplicate key value {k}", RuntimeWarning)
+  warnings.warn(f"duplicate key value {k}", RuntimeWarning)
 '{ "100": "mary", "200": "had", "300": ["a", "little", "lamb"] }'
 ```
 
