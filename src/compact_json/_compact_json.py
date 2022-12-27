@@ -2,9 +2,10 @@ import argparse
 import json
 import logging
 
+import compact_json
 from compact_json import EolStyle, Formatter, _get_version
-from compact_json.formatter import logger
 
+logger = logging.getLogger(compact_json.__name__)
 
 def command_line_parser():
     parser = argparse.ArgumentParser(
