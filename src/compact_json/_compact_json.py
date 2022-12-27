@@ -7,6 +7,7 @@ from compact_json import EolStyle, Formatter, _get_version
 
 logger = logging.getLogger(compact_json.__name__)
 
+
 def command_line_parser():
     parser = argparse.ArgumentParser(
         description="Format JSON into compact, human readble form"
@@ -124,12 +125,12 @@ def main():  # noqa: C901
         formatter.ensure_ascii = not args.no_ensure_ascii
 
         hdlr = logging.StreamHandler()
-        hdlr.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
+        hdlr.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
         logger.addHandler(hdlr)
         if args.debug:
-            logger.setLevel('DEBUG')
+            logger.setLevel("DEBUG")
         else:
-            logger.setLevel('ERROR')
+            logger.setLevel("ERROR")
 
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50

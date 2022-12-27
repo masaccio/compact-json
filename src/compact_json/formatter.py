@@ -11,6 +11,7 @@ from wcwidth import wcswidth
 logger = logging.getLogger(__name__)
 debug = logger.debug
 
+
 class EolStyle(Enum):
     CRLF = 1
     LF = 2
@@ -810,7 +811,6 @@ class Formatter:
         try:
             score = 100 * total_prop_count / (len(ordered_props) * len(item.children))
         except ZeroDivisionError:  # pragma: no cover
-            warnings.warn(f"handled div/0 (please report an issue)", RuntimeWarning)
             return None
         if score < self.table_dict_minimum_similarity:
             return None
@@ -861,7 +861,7 @@ class Formatter:
             similarity = (
                 100 * total_elem_count / (len(item.children) * number_of_columns)
             )
-        except ZeroDivisionError:
+        except ZeroDivisionError:  # pragma: no cover
             return None
         if similarity < self.table_list_minimum_similarity:
             return None
