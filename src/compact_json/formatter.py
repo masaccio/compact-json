@@ -1,11 +1,11 @@
 import json
+import logging
 import warnings
-
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
-import logging
 from typing import List
+
 from wcwidth import wcswidth
 
 debug = logging.getLogger('compact_json').debug
