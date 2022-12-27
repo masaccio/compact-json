@@ -1,8 +1,8 @@
 import argparse
 import json
-import logging
 
 from compact_json import EolStyle, Formatter, _get_version
+from compact_json.formatter import logger
 
 
 def command_line_parser():
@@ -122,9 +122,9 @@ def main():  # noqa: C901
         formatter.ensure_ascii = not args.no_ensure_ascii
 
         if args.debug:
-            logging.getLogger('compact_json').setLevel(logging.DEBUG)
+            logger.setLevel('DEBUG')
         else:
-            logging.getLogger('compact_json').setLevel(logging.ERROR)
+            logger.setLevel('ERROR')
 
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50

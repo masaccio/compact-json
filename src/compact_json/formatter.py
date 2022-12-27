@@ -8,7 +8,8 @@ from typing import List
 
 from wcwidth import wcswidth
 
-debug = logging.getLogger('compact_json').debug
+logger = logging.getLogger(__name__)
+debug = logger.debug
 
 class EolStyle(Enum):
     CRLF = 1
