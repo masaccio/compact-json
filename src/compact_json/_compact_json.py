@@ -122,9 +122,9 @@ def main():  # noqa: C901
         formatter.ensure_ascii = not args.no_ensure_ascii
 
         if args.debug:
-            logging.getLogger().setLevel(logging.DEBUG)
+            logging.getLogger('compact_json').setLevel(logging.DEBUG)
         else:
-            logging.getLogger().setLevel(logging.ERROR)
+            logging.getLogger('compact_json').setLevel(logging.ERROR)
 
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50

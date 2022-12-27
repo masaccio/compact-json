@@ -4,10 +4,11 @@ import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
-from logging import debug
+import logging
 from typing import List
 from wcwidth import wcswidth
 
+debug = logging.getLogger('compact_json').debug
 
 class EolStyle(Enum):
     CRLF = 1
