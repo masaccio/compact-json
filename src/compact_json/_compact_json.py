@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 
 from compact_json import EolStyle, Formatter, _get_version
 from compact_json.formatter import logger
@@ -121,6 +122,9 @@ def main():  # noqa: C901
         formatter.east_asian_string_widths = args.east_asian_chars
         formatter.ensure_ascii = not args.no_ensure_ascii
 
+        hdlr = logging.StreamHandler()
+        hdlr.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
+        logger.addHandler(hdlr)
         if args.debug:
             logger.setLevel('DEBUG')
         else:
