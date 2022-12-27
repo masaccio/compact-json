@@ -1,13 +1,15 @@
 import json
+import logging
 import warnings
-
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
-from logging import debug
 from typing import List
+
 from wcwidth import wcswidth
 
+logger = logging.getLogger(__name__)
+debug = logger.debug
 
 class EolStyle(Enum):
     CRLF = 1

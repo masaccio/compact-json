@@ -104,7 +104,7 @@ def test_help(script_runner):
 
 def test_debug(script_runner):
     ret = script_runner.run("compact-json", "--debug", "tests/data/test-1.json")
-    assert "DEBUG:root:format_table_dict_list" in ret.stderr
+    assert "DEBUG:compact_json.formatter:format_table_dict_list" in ret.stderr
     assert ret.success
     assert '"title": "Sample Konfabulator Widget"' in ret.stdout
 
