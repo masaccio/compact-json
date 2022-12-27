@@ -107,3 +107,10 @@ def test_debug(script_runner):
     assert "DEBUG:root:format_table_dict_list" in ret.stderr
     assert ret.success
     assert '"title": "Sample Konfabulator Widget"' in ret.stdout
+
+@pytest.mark.script_launch_mode("subprocess")
+def test_main(script_runner):
+    ret = script_runner.run("python3", "-m", "compact_json", "--help")
+    assert ret.stderr == ""
+    assert ret.success
+    assert "[-h] [-V] [--crlf]" in ret.stdout    
