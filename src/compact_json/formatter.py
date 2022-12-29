@@ -68,7 +68,7 @@ def _fixed_value(value, num_decimals: int):
         warnings.warn(
             f"handled quantize error (please report an issue)", RuntimeWarning
         )
-        return "0"
+        return value
 
 
 class ColumnStats:
@@ -94,7 +94,7 @@ class ColumnStats:
         debug(f"  max_value_size={self.max_value_size}")
         debug(f"  value_length={prop_node.value_length}")
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
-        if self.kind==JsonValueKind.NULL:
+        if self.kind == JsonValueKind.NULL:
             self.kind = prop_node.kind
         elif self.kind != prop_node.kind:
             self.kind = JsonValueKind.UNDEFINED
