@@ -97,7 +97,7 @@ class ColumnStats:
         if self.kind==JsonValueKind.NULL:
             self.kind = prop_node.kind
         elif self.kind != prop_node.kind:
-            prop_node.kind = JsonValueKind.UNDEFINED
+            self.kind = JsonValueKind.UNDEFINED
 
         if prop_node.kind == JsonValueKind.FLOAT:
             (whole, frac) = str(prop_node.value).split(".")
