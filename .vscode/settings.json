@@ -1,5 +1,7 @@
 {
-    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.formatOnSave": true
+    },
     "editor.wordWrap": "wordWrapColumn",
     "editor.wordWrapColumn": 100,
     "python.formatting.provider": "black",
