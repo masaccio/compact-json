@@ -94,7 +94,10 @@ class ColumnStats:
         debug(f"  max_value_size={self.max_value_size}")
         debug(f"  value_length={prop_node.value_length}")
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
-        self.kind = prop_node.kind
+        if self.kind==JsonValueKind.NULL:
+            self.kind = prop_node.kind
+        elif self.kind != prop_node.kind:
+            prop_node.kind = JsonValueKind.UNDEFINED
 
         if prop_node.kind == JsonValueKind.FLOAT:
             (whole, frac) = str(prop_node.value).split(".")
