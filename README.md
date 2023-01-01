@@ -244,3 +244,10 @@ with this original code, and hence all the bugs are my own.
 ## License
 
 All code in this repository is licensed under the [MIT License](https://github.com/masaccio/compact-json/blob/master/LICENSE.rst)
+
+## Contribute
+
+``` shell
+$ pip install poetry pytest-cov pytest
+$ poetry run pytest
+```
