@@ -12,16 +12,7 @@ logger = logging.getLogger(compact_json.__name__)
 
 def command_line_parser():
     parser = argparse.ArgumentParser(
-        usage= (
-            'Format JSON into compact, human readble form\n\n'
-            '%(prog)s [JSON file(s) or "-" for stdin]\n\n'
-            'e.g file as input\n'
-            '  compact-json file.json\n'
-            'e.g with files as inputs\n'
-            '  compact-json file.json file2.json\n'
-            'e.g with input from a pipe as stdin\n'
-            '  cat file.json | compact-json -\n'),
-    )
+        description='Format JSON into compact, human readble form')
     parser.add_argument("-V", "--version", action="store_true")
     parser.add_argument(
         "--crlf",
@@ -96,9 +87,9 @@ def command_line_parser():
         "--debug", default=False, action="store_true", help="Enable debug logging"
     )
 
-    parser.add_argument('json', nargs='?', type=argparse.FileType('r'),
-                        help='json file(s) or stdin with "-" argument')
-
+    help_json = ('JSON file(s) or stdin with "-" argument (default: read '
+                 'stdin when no filename) e.g `cat file.json | compact-json -`')
+    parser.add_argument('json', nargs='?', type=argparse.FileType('r'), help=help_json)
     return parser
 
 
