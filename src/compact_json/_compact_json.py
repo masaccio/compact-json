@@ -1,6 +1,8 @@
+from io import IOBase
 import argparse
 import json
 import logging
+import sys
 
 import compact_json
 from compact_json import EolStyle, Formatter, _get_version
@@ -10,7 +12,15 @@ logger = logging.getLogger(compact_json.__name__)
 
 def command_line_parser():
     parser = argparse.ArgumentParser(
-        description="Format JSON into compact, human readble form"
+        usage= (
+            'Format JSON into compact, human readble form\n\n'
+            '%(prog)s [JSON file(s) or "-" for stdin]\n\n'
+            'e.g file as input\n'
+            '  compact-json file.json\n'
+            'e.g with files as inputs\n'
+            '  compact-json file.json file2.json\n'
+            'e.g with input from a pipe as stdin\n'
+            '  cat file.json | compact-json -\n'),
     )
     parser.add_argument("-V", "--version", action="store_true")
     parser.add_argument(
@@ -86,7 +96,8 @@ def command_line_parser():
         "--debug", default=False, action="store_true", help="Enable debug logging"
     )
 
-    parser.add_argument("json", nargs="*", help="JSON file(s) to dump")
+    parser.add_argument('json', nargs='?', type=argparse.FileType('r'),
+                        help='json file(s) or stdin with "-" argument')
 
     return parser
 
@@ -94,10 +105,9 @@ def command_line_parser():
 def main():  # noqa: C901
     parser = command_line_parser()
     args = parser.parse_args()
-
     if args.version:
         print(_get_version())
-    elif len(args.json) == 0:
+    elif args.json is None:
         parser.print_help()
     else:
         formatter = Formatter()
@@ -135,14 +145,24 @@ def main():  # noqa: C901
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50
 
-        for filename in args.json:
-            with open(filename, "r") as f:
+        if isinstance(args.json, IOBase):
+            with args.json as f:
                 obj = json.load(f)
                 json_string = formatter.serialize(obj)
-                if args.crlf:
-                    print(json_string, end="\r\n")
-                else:
-                    print(json_string, end="\n")
+                ending = "\r\n" if args.crlf else "\n"
+                print(json_string, end=ending)
+        elif args.json:
+            for filename in args.json:
+                with open(filename, "r") as f:
+                    obj = json.load(f)
+                    json_string = formatter.serialize(obj)
+                    if args.crlf:
+                        print(json_string, end="\r\n")
+                    else:
+                        print(json_string, end="\n")
+        else:
+            print('no input')
+            parser.print_help()
 
 
 if __name__ == "__main__":  # pragma: no cover
