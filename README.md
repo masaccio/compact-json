@@ -247,7 +247,4 @@ All code in this repository is licensed under the [MIT License](https://github.c
 
 ## Contribute
 
-``` shell
-$ pip install poetry pytest-cov pytest pytest-console-scripts
-$ poetry run pytest
-```
+Contributions are greatly appreciated and welcomed. Please follow the [project guidance](CONTRIBUTING.md) on how to contribute.
