@@ -27,11 +27,11 @@ REF_ARG_TEST = """//{
 //		"Erik"     : [ "red"       , "purple"                    ], 
 //		"Jean"     : [ "lightgreen", "yellow"   , "black"        ]
 //	}, 
-//	"ArrayColumnsArrayRows": [
+//	"ArrayColumnsArrayRows" : [
 //		[ 0.1, 3.5, 10.50, 6.5, 2.50, 0.60 ], [ 0.1, 0.1,  1.20, 2.1, 6.70, 4.40 ], [ 0.4, 1.9,  4.40, 5.4, 2.35, 2.01 ], 
 //		[ 7.4, 1.2,  0.01, 0.1, 2.91, 0.20 ]
 //	], 
-//	"DissimilarArrayRows": {
+//	"DissimilarArrayRows"   : {
 //		"primes"     : [ 2, 3, 5, 7, 11                   ], 
 //		"powersOf2"  : [ 1, 2, 4, 8, 16, 32, 64, 128, 256 ], 
 //		"factorsOf12": [ 2, 2, 3                          ], 
@@ -42,13 +42,13 @@ REF_ARG_TEST = """//{
 
 REF_UNICODE_TEST = """{
     "Thai": {
-        "Abkhazia": "อับฮาเซีย", 
-        "Afghanistan": "อัฟกานิสถาน", 
+        "Abkhazia": "อับฮาเซีย",
+        "Afghanistan": "อัฟกานิสถาน",
         "Albania": "แอลเบเนีย"
-    }, 
-    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"}, 
-    "Uyghur": {"Albania": "ئالبانىيە"}, 
-    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"}, 
+    },
+    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"},
+    "Uyghur": {"Albania": "ئالبانىيە"},
+    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"},
     "Western Armenian": {"Albania": "Ալբանիա"}
 }
 """
