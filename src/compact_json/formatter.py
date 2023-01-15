@@ -704,8 +704,14 @@ class Formatter:
                 ] or item.children[child_index - 1].format not in [
                     Format.INLINE,
                     Format.INLINE_TABULAR,
-                ]:
-                    # todo: add debug info?
+                ]:  # pragma: no cover
+                    warnings.warn(
+                        f"non-inline item shorter than max_inline_length"
+                        " (please report an issue)",
+                        RuntimeWarning,
+                    )
+                    # should be impossible as multiline_compact_dict must be true for
+                    # this method to run. Cannot think of an exception yet.
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
