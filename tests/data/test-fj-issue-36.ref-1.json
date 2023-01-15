@@ -1,6 +1,6 @@
 @dont_justify_numbers=True
 @max_inline_complexity=1
 [
-    { "x": 0.0, "y": 4  },
+    { "x": 0.0, "y": 4  }, 
     { "x": 1.0, "y": 19 }
 ]

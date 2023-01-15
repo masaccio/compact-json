@@ -3,9 +3,9 @@
 @east_asian_string_widths=True
 @table_dict_minimum_similarity=10
 {
-    "Thai"                    : { "Abkhazia": "อับฮาเซีย", "Afghanistan": "อัฟกานิสถาน"  , "Albania": "แอลเบเนีย"  },
-    "Lao"                     : {                        "Afghanistan": "ອັຟການິດສະຖານ"                         },
-    "Uyghur"                  : {                                                      "Albania": "ئالبانىيە" },
-    "Hindi, Marathi, Sanskrit": {                                                      "Albania": "अल्बानिया"  },
+    "Thai"                    : { "Abkhazia": "อับฮาเซีย", "Afghanistan": "อัฟกานิสถาน"  , "Albania": "แอลเบเนีย"  }, 
+    "Lao"                     : {                        "Afghanistan": "ອັຟການິດສະຖານ"                         }, 
+    "Uyghur"                  : {                                                      "Albania": "ئالبانىيە" }, 
+    "Hindi, Marathi, Sanskrit": {                                                      "Albania": "अल्बानिया"  }, 
     "Western Armenian"        : {                                                      "Albania": "Ալբանիա"   }
 }

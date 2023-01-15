@@ -1,15 +1,16 @@
 import json
 import re
+from pathlib import Path
+
 import pytest
 
 from compact_json import Formatter
-from pathlib import Path
 
 REF_ISSUE_7 = '{ "100": "mary", "200": "had", "300": ["a", "little", "lamb"] }'
 REF_TYPES = """{
-  "bool": [true, false],
-  "float": 1.234,
-  "int": [100, 200, 300],
+  "bool": [true, false], 
+  "float": 1.234, 
+  "int": [100, 200, 300], 
   "string": "value"
 }"""
 

@@ -118,7 +118,7 @@ def main():  # noqa: C901
         if args.crlf:
             formatter.json_eol_style = EolStyle.CRLF
         if args.align_properties:
-            Formatter.align_expanded_property_names = True
+            formatter.align_expanded_property_names = True
         if args.bracket_padding == "simple":
             formatter.nested_bracket_padding = False
             formatter.simple_bracket_padding = True

@@ -3,6 +3,6 @@
 @max_inline_complexity=100
 @max_compact_list_complexity=100
 {
-    "AttackPlans" : [ { "TeamId": 1, "Spawns": [ {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0}, {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0}, {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0} ] } ],
+    "AttackPlans" : [ { "TeamId": 1, "Spawns": [ {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0}, {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0}, {"Time": 0.1, "UnitType": "Grunt", "SpawnPointIndex": 0} ] } ], 
     "DefensePlans": [ { "TeamId": 2, "Placements": [ { "UnitType": "Archer", "Position": [41, 7] }, { "UnitType": "Pikeman", "Position": [40, 7] }, { "UnitType": "Barricade", "Position": [39, 7] } ] }                          ]
 }
