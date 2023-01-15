@@ -330,9 +330,8 @@ class Formatter:
         item.depth = depth
         item.children = items
 
-        if item.depth > self.always_expand_depth:
-            if self.format_list_inline(item):
-                return item
+        if self.format_list_inline(item):
+            return item
 
         self.justify_parallel_numbers(item.children)
 
@@ -342,9 +341,8 @@ class Formatter:
         if self.format_table_list_list(item):
             return item
 
-        if item.depth > self.always_expand_depth:
-            if self.format_list_multiline_compact(item):
-                return item
+        if self.format_list_multiline_compact(item):
+            return item
 
         self.format_list_expanded(item)
         return item
@@ -379,9 +377,8 @@ class Formatter:
         item.depth = depth
         item.children = items
 
-        if item.depth > self.always_expand_depth:
-            if self.format_dict_inline(item):
-                return item
+        if self.format_dict_inline(item):
+            return item
 
         if self.format_table_dict_dict(item):
             return item
@@ -389,9 +386,8 @@ class Formatter:
         if self.format_table_dict_list(item):
             return item
 
-        if item.depth > self.always_expand_depth and self.multiline_compact_dict:
-            if self.format_dict_multiline_compact(item):
-                return item
+        if self.format_dict_multiline_compact(item):
+            return item
 
         self.format_dict_expanded(item, False)
         return item
@@ -409,7 +405,10 @@ class Formatter:
 
     def format_list_inline(self, item: FormattedNode) -> bool:
         """Try to format this list in a single line, if possible."""
-        if item.complexity > self.max_inline_complexity:
+        if (
+            item.depth <= self.always_expand_depth
+            or item.complexity > self.max_inline_complexity
+        ):
             return False
 
         if any([fn.format != Format.INLINE for fn in item.children]):
@@ -452,7 +451,10 @@ class Formatter:
         """Try to format this list, spanning multiple lines, but with several items
         per line, if possible."""
         debug("format_list_multiline_compact()")
-        if item.complexity > self.max_compact_list_complexity:
+        if (
+            item.depth <= self.always_expand_depth
+            or item.complexity > self.max_compact_list_complexity
+        ):
             return False
 
         buffer = ["[", self.eol_str]
@@ -520,10 +522,7 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, col_stats)
 
-        if (
-            item.depth > self.always_expand_depth
-            and self.format_list_multiline_compact(item)
-        ):
+        if self.format_list_multiline_compact(item):
             return item
         else:
             return self.format_list_expanded(item)
@@ -543,10 +542,7 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        if (
-            item.depth > self.always_expand_depth
-            and self.format_list_multiline_compact(item)
-        ):
+        if self.format_list_multiline_compact(item):
             return item
         else:
             return self.format_list_expanded(item)
@@ -615,7 +611,10 @@ class Formatter:
 
     def format_dict_inline(self, item: FormattedNode) -> bool:
         """Format this dict as a single line, if possible."""
-        if item.complexity > self.max_inline_complexity:
+        if (
+            item.depth <= self.always_expand_depth
+            or item.complexity > self.max_inline_complexity
+        ):
             return False
 
         if any([fn.format != Format.INLINE for fn in item.children]):
@@ -663,7 +662,11 @@ class Formatter:
         """Try to format this dict, spanning multiple lines, but with several items
         per line, if possible."""
         debug("format_dict_multiline_compact()")
-        if item.complexity > self.max_compact_list_complexity:
+        if (
+            not self.multiline_compact_dict
+            or item.depth <= self.always_expand_depth
+            or item.complexity > self.max_compact_list_complexity
+        ):
             return False
 
         max_prop_name_length = max([fn.name_length for fn in item.children])
@@ -746,10 +749,7 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, prop_stats)
 
-        if (
-            item.depth > self.always_expand_depth
-            and self.format_dict_multiline_compact(item, True)
-        ):
+        if self.format_dict_multiline_compact(item, True):
             return item
         else:
             return self.format_dict_expanded(item, True)
@@ -771,10 +771,7 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        if (
-            item.depth > self.always_expand_depth
-            and self.format_dict_multiline_compact(item, True)
-        ):
+        if self.format_dict_multiline_compact(item, True):
             return item
         else:
             return self.format_dict_expanded(item, True)
