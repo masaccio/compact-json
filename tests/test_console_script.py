@@ -42,13 +42,13 @@ REF_ARG_TEST = """//{
 
 REF_UNICODE_TEST = """{
     "Thai": {
-        "Abkhazia": "อับฮาเซีย",
-        "Afghanistan": "อัฟกานิสถาน",
+        "Abkhazia": "อับฮาเซีย", 
+        "Afghanistan": "อัฟกานิสถาน", 
         "Albania": "แอลเบเนีย"
-    },
-    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"},
-    "Uyghur": {"Albania": "ئالبانىيە"},
-    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"},
+    }, 
+    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"}, 
+    "Uyghur": {"Albania": "ئالبانىيە"}, 
+    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"}, 
     "Western Armenian": {"Albania": "Ալբանիա"}
 }
 """
