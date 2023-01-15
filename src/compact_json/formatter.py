@@ -468,7 +468,22 @@ class Formatter:
             item_length = item.children[child_index].value_length
             segment_length = item_length + len(self.padded_comma_str)
             if child_index != 0:
-                if (
+                flag_new_line = False
+                if item.children[child_index].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
+                    if item.children[child_index - 1].format in [
+                        Format.INLINE,
+                        Format.INLINE_TABULAR,
+                    ]:
+                        flag_new_line = True
+                elif item.children[child_index - 1].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
+                    flag_new_line = True
+                elif (
                     line_length_so_far + segment_length > self.max_inline_length
                     and line_length_so_far > 0
                 ):
@@ -476,21 +491,11 @@ class Formatter:
                     debug(f"  line_length_so_far={line_length_so_far}")
                     debug(f"  segment_length={segment_length}")
                     debug(f"  buffer={buffer}¶")
+                    flag_new_line = True
+                if flag_new_line:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
-                elif item.children[child_index].format not in [
-                    Format.INLINE,
-                    Format.INLINE_TABULAR,
-                ] or item.children[child_index - 1].format not in [
-                    Format.INLINE,
-                    Format.INLINE_TABULAR,
-                ]:
-                    # todo: add debug info?
-                    buffer += self.eol_str
-                    self.indent(buffer, item.depth + 1)
-                    line_length_so_far = 0
-
             buffer += item.children[child_index].value
             if not_last_item:
                 buffer += self.padded_comma_str
@@ -690,7 +695,22 @@ class Formatter:
 
             segment_length = item_length + len(self.padded_comma_str)
             if child_index != 0:
-                if (
+                flag_new_line = False
+                if prop.format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
+                    if item.children[child_index - 1].format in [
+                        Format.INLINE,
+                        Format.INLINE_TABULAR,
+                    ]:
+                        flag_new_line = True
+                elif item.children[child_index - 1].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
+                    flag_new_line = True
+                elif (
                     line_length_so_far + segment_length > self.max_inline_length
                     and line_length_so_far > 0
                 ):
@@ -698,23 +718,8 @@ class Formatter:
                     debug(f"  line_length_so_far={line_length_so_far}")
                     debug(f"  segment_length={segment_length}")
                     debug(f"  buffer={buffer}¶")
-                    buffer += self.eol_str
-                    self.indent(buffer, item.depth + 1)
-                    line_length_so_far = 0
-                elif prop.format not in [
-                    Format.INLINE,
-                    Format.INLINE_TABULAR,
-                ] or item.children[child_index - 1].format not in [
-                    Format.INLINE,
-                    Format.INLINE_TABULAR,
-                ]:  # pragma: no cover
-                    warnings.warn(
-                        f"non-inline item shorter than max_inline_length"
-                        " (please report an issue)",
-                        RuntimeWarning,
-                    )
-                    # should be impossible as multiline_compact_dict must be true for
-                    # this method to run. Cannot think of an exception yet.
+                    flag_new_line = True
+                if flag_new_line:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
