@@ -96,11 +96,13 @@ def test_unicode(script_runner):
     ref = REF_UNICODE_TEST.replace("\n", "\r\n")
     assert ret.stdout == ref
 
+
 def test_help(script_runner):
     ret = script_runner.run("compact-json")
     assert ret.stderr == ""
     assert ret.success
     assert "[--prefix-string STRING] [--align-properties]" in ret.stdout
+
 
 def test_debug(script_runner):
     ret = script_runner.run("compact-json", "--debug", "tests/data/test-1.json")
@@ -108,9 +110,30 @@ def test_debug(script_runner):
     assert ret.success
     assert '"title": "Sample Konfabulator Widget"' in ret.stdout
 
+
 @pytest.mark.script_launch_mode("subprocess")
 def test_main(script_runner):
     ret = script_runner.run("python3", "-m", "compact_json", "--help")
     assert ret.stderr == ""
     assert ret.success
-    assert "[-h] [-V] [--crlf]" in ret.stdout    
+    assert "[-h] [-V] [--crlf]" in ret.stdout
+
+
+@pytest.mark.script_launch_mode("subprocess")
+def test_stdin(script_runner):
+    with open("tests/data/test-bool.json") as fh:
+        ret = script_runner.run("compact-json", "-", stdin=fh)
+        assert ret.stderr == ""
+        assert ret.success
+        assert ret.stdout == '{ "bools": {"true": true, "false": false} }\n'
+
+
+def test_multifile(script_runner):
+    ret = script_runner.run(
+        "compact-json",
+        "tests/data/test-bool.json",
+        "tests/data/test-bool.json",
+    )
+    assert ret.stderr == ""
+    assert ret.success
+    assert ret.stdout == '{ "bools": {"true": true, "false": false} }\n' * 2
