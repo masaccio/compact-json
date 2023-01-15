@@ -1,5 +1,6 @@
-import pytest
 import re
+
+import pytest
 
 from compact_json import _get_version
 
@@ -21,19 +22,19 @@ def test_help(script_runner):
 
 REF_ARG_TEST = """//{
 //	"ObjectColumnsArrayRows": {
-//		"Katherine": [ "blue"      , "lightblue", "black"        ],
-//		"Logan"    : [ "yellow"    , "blue"     , "black", "red" ],
-//		"Erik"     : [ "red"       , "purple"                    ],
+//		"Katherine": [ "blue"      , "lightblue", "black"        ], 
+//		"Logan"    : [ "yellow"    , "blue"     , "black", "red" ], 
+//		"Erik"     : [ "red"       , "purple"                    ], 
 //		"Jean"     : [ "lightgreen", "yellow"   , "black"        ]
-//	},
+//	}, 
 //	"ArrayColumnsArrayRows": [
 //		[ 0.1, 3.5, 10.5, 6.5, 2.5, 0.6 ], [ 0.1, 0.1, 1.2, 2.1, 6.7, 4.4 ], [ 0.4, 1.9, 4.4, 5.4, 2.35, 2.01 ], 
 //		[ 7.4, 1.2, 0.01, 0.1, 2.91, 0.2 ]
-//	],
+//	], 
 //	"DissimilarArrayRows": {
-//		"primes"     : [ 2, 3, 5, 7, 11                   ],
-//		"powersOf2"  : [ 1, 2, 4, 8, 16, 32, 64, 128, 256 ],
-//		"factorsOf12": [ 2, 2, 3                          ],
+//		"primes"     : [ 2, 3, 5, 7, 11                   ], 
+//		"powersOf2"  : [ 1, 2, 4, 8, 16, 32, 64, 128, 256 ], 
+//		"factorsOf12": [ 2, 2, 3                          ], 
 //		"someZeros"  : [ 0, 0, 0, 0                       ]
 //	}
 //}
@@ -41,13 +42,13 @@ REF_ARG_TEST = """//{
 
 REF_UNICODE_TEST = """{
     "Thai": {
-        "Abkhazia": "อับฮาเซีย",
-        "Afghanistan": "อัฟกานิสถาน",
+        "Abkhazia": "อับฮาเซีย", 
+        "Afghanistan": "อัฟกานิสถาน", 
         "Albania": "แอลเบเนีย"
-    },
-    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"},
-    "Uyghur": {"Albania": "ئالبانىيە"},
-    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"},
+    }, 
+    "Lao": {"Afghanistan": "ອັຟການິດສະຖານ"}, 
+    "Uyghur": {"Albania": "ئالبانىيە"}, 
+    "Hindi, Marathi, Sanskrit": {"Albania": "अल्बानिया"}, 
     "Western Armenian": {"Albania": "Ալբանիա"}
 }
 """
@@ -96,11 +97,13 @@ def test_unicode(script_runner):
     ref = REF_UNICODE_TEST.replace("\n", "\r\n")
     assert ret.stdout == ref
 
+
 def test_help(script_runner):
     ret = script_runner.run("compact-json")
     assert ret.stderr == ""
     assert ret.success
     assert "[--prefix-string STRING] [--align-properties]" in ret.stdout
+
 
 def test_debug(script_runner):
     ret = script_runner.run("compact-json", "--debug", "tests/data/test-1.json")
@@ -108,9 +111,10 @@ def test_debug(script_runner):
     assert ret.success
     assert '"title": "Sample Konfabulator Widget"' in ret.stdout
 
+
 @pytest.mark.script_launch_mode("subprocess")
 def test_main(script_runner):
     ret = script_runner.run("python3", "-m", "compact_json", "--help")
     assert ret.stderr == ""
     assert ret.success
-    assert "[-h] [-V] [--crlf]" in ret.stdout    
+    assert "[-h] [-V] [--crlf]" in ret.stdout
