@@ -597,7 +597,7 @@ class Formatter:
         first_elem = True
         for child in item.children:
             if not first_elem:
-                buffer += [",", self.eol_str]
+                buffer += [self.padded_comma_str, self.eol_str]
             self.indent(buffer, child.depth).append(child.value)
             first_elem = False
 
@@ -825,7 +825,7 @@ class Formatter:
         first_item = True
         for prop in item.children:
             if not first_item:
-                buffer += [",", self.eol_str]
+                buffer += [self.padded_comma_str, self.eol_str]
             self.indent(buffer, prop.depth).append(prop.name)
 
             if self.align_expanded_property_names or force_expand_prop_names:

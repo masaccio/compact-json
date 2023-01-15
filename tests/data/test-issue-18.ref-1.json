@@ -11,7 +11,7 @@
             "default_team": "3001,3002,3003,3004,3005", "start_time": 1673193600, 
             "end_time": 1673798399
         }
-    },
+    }, 
     "req": {
         "spot_id": 1633, "if_enemy_die": true, "current_time": 1673625806, 
         "boss_hp": 0, "mvp": 210119981, "last_battle_info": "", "use_skill_squads": [], 

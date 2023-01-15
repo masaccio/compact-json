@@ -1,6 +1,6 @@
 @align_expanded_property_names=True
 {
-    "lamp"   : {"x": 4, "y": 1002, "r": 75, "g": 0, "b": 130, "state": 1},
-    "address": {"city": "San Diego", "state": "CA"},
+    "lamp"   : {"x": 4, "y": 1002, "r": 75, "g": 0, "b": 130, "state": 1}, 
+    "address": {"city": "San Diego", "state": "CA"}, 
     "font"   : {"r": 0, "g": 12, "b": 40, "size": 18, "style": "italic"}
 }
