@@ -244,3 +244,7 @@ with this original code, and hence all the bugs are my own.
 ## License
 
 All code in this repository is licensed under the [MIT License](https://github.com/masaccio/compact-json/blob/master/LICENSE.rst)
+
+## Contribute
+
+Contributions are greatly appreciated and welcomed. Please follow the [project guidance](CONTRIBUTING.md) on how to contribute.
