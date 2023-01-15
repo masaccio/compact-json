@@ -17,7 +17,7 @@ jobs:
         sudo apt-get -y install libsnappy-dev
         pip install poetry
         poetry install
-        poetry run pytest --cov=src/compact_json --cov-report=xml
+        poetry run pytest --cov=src/compact_json --cov-report=xml --cov-report=term-missing
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
