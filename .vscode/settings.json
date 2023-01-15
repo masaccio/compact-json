@@ -7,6 +7,7 @@
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
+    "black-formatter.args": [],
     "python.testing.pytestArgs": [
         "tests"
     ],
