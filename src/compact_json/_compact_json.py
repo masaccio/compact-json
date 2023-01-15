@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+from io import IOBase
 
 import compact_json
 from compact_json import EolStyle, Formatter, _get_version
@@ -21,6 +22,7 @@ def command_line_parser():
     )
     parser.add_argument(
         "--max-inline-length",
+        "-l",
         metavar="N",
         type=int,
         default=50,
@@ -48,7 +50,12 @@ def command_line_parser():
         help="If nested padding, add spaces inside outside brackes for nested lists/dicts",
     )
     parser.add_argument(
-        "--indent", metavar="N", type=int, default=4, help="Indent N spaces (default=4)"
+        "--indent",
+        "-i",
+        metavar="N",
+        type=int,
+        default=4,
+        help="Indent N spaces (default=4)",
     )
     parser.add_argument(
         "--tab-indent", default=False, action="store_true", help="Use tabs to indent"
@@ -86,15 +93,18 @@ def command_line_parser():
         "--debug", default=False, action="store_true", help="Enable debug logging"
     )
 
-    parser.add_argument("json", nargs="*", help="JSON file(s) to dump")
-
+    parser.add_argument(
+        "json",
+        nargs="*",
+        type=argparse.FileType("r"),
+        help='JSON file(s) to parse (or stdin with "-")',
+    )
     return parser
 
 
 def main():  # noqa: C901
     parser = command_line_parser()
     args = parser.parse_args()
-
     if args.version:
         print(_get_version())
     elif len(args.json) == 0:
@@ -135,14 +145,11 @@ def main():  # noqa: C901
         formatter.table_dict_minimum_similarity = 30
         formatter.table_list_minimum_similarity = 50
 
-        for filename in args.json:
-            with open(filename, "r") as f:
-                obj = json.load(f)
-                json_string = formatter.serialize(obj)
-                if args.crlf:
-                    print(json_string, end="\r\n")
-                else:
-                    print(json_string, end="\n")
+        line_ending = "\r\n" if args.crlf else "\n"
+        for fh in args.json:
+            obj = json.load(fh)
+            json_string = formatter.serialize(obj)
+            print(json_string, end=line_ending)
 
 
 if __name__ == "__main__":  # pragma: no cover

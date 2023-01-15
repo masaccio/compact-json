@@ -1,9 +1,9 @@
 {
     "[python]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 100
     },
-    "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 100,
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,

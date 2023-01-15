@@ -118,3 +118,23 @@ def test_main(script_runner):
     assert ret.stderr == ""
     assert ret.success
     assert "[-h] [-V] [--crlf]" in ret.stdout
+
+
+@pytest.mark.script_launch_mode("subprocess")
+def test_stdin(script_runner):
+    with open("tests/data/test-bool.json") as fh:
+        ret = script_runner.run("compact-json", "-", stdin=fh)
+        assert ret.stderr == ""
+        assert ret.success
+        assert ret.stdout == '{ "bools": {"true": true, "false": false} }\n'
+
+
+def test_multifile(script_runner):
+    ret = script_runner.run(
+        "compact-json",
+        "tests/data/test-bool.json",
+        "tests/data/test-bool.json",
+    )
+    assert ret.stderr == ""
+    assert ret.success
+    assert ret.stdout == '{ "bools": {"true": true, "false": false} }\n' * 2
