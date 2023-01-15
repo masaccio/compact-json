@@ -336,15 +336,15 @@ class Formatter:
 
         self.justify_parallel_numbers(item.children)
 
-        if item.depth > self.always_expand_depth:
-            if self.format_list_multiline_compact(item):
-                return item
-
         if self.format_table_list_dict(item):
             return item
 
         if self.format_table_list_list(item):
             return item
+
+        if item.depth > self.always_expand_depth:
+            if self.format_list_multiline_compact(item):
+                return item
 
         self.format_list_expanded(item)
         return item
@@ -383,15 +383,15 @@ class Formatter:
             if self.format_dict_inline(item):
                 return item
 
-        if item.depth > self.always_expand_depth and self.multiline_compact_dict:
-            if self.format_dict_multiline_compact(item):
-                return item
-
         if self.format_table_dict_dict(item):
             return item
 
         if self.format_table_dict_list(item):
             return item
+
+        if item.depth > self.always_expand_depth and self.multiline_compact_dict:
+            if self.format_dict_multiline_compact(item):
+                return item
 
         self.format_dict_expanded(item, False)
         return item
@@ -412,12 +412,7 @@ class Formatter:
         if item.complexity > self.max_inline_complexity:
             return False
 
-        if any(
-            [fn.format != Format.INLINE for fn in item.children]
-        ):  # pragma: no cover
-            warnings.warn(
-                f"list elements not inline (please report an issue)", RuntimeWarning
-            )
+        if any([fn.format != Format.INLINE for fn in item.children]):
             return False
 
         if item.complexity >= 2:
@@ -460,20 +455,11 @@ class Formatter:
         if item.complexity > self.max_compact_list_complexity:
             return False
 
-        # if any(
-        #     [fn.format != Format.INLINE for fn in item.children]
-        # ):  # pragma: no cover
-        #     warnings.warn(
-        #         f"list elements not inline (please report an issue)", RuntimeWarning
-        #     )
-        #     return False
-
         buffer = ["[", self.eol_str]
         self.indent(buffer, item.depth + 1)
 
         line_length_so_far = 0
         child_index = 0
-        compact = False
         while child_index < len(item.children):
             not_last_item = child_index < (len(item.children) - 1)
 
@@ -491,16 +477,17 @@ class Formatter:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
-                elif (
-                    item.children[child_index].format != Format.INLINE
-                    or item.children[child_index - 1].format != Format.INLINE
-                ):
+                elif item.children[child_index].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ] or item.children[child_index - 1].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
                     # todo: add debug info?
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
-                else:
-                    compact = True
 
             buffer += item.children[child_index].value
             if not_last_item:
@@ -508,11 +495,6 @@ class Formatter:
 
             child_index += 1
             line_length_so_far += segment_length
-
-        if not compact:
-            # return False if every item starts from a new line
-            # allowing table_list_dict to take priority in such scenario
-            return False
 
         buffer += self.eol_str
         self.indent(buffer, item.depth)
@@ -538,7 +520,10 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, col_stats)
 
-        return self.format_list_expanded(item)
+        if self.format_list_multiline_compact(item):
+            return item
+        else:
+            return self.format_list_expanded(item)
 
     def format_table_list_list(self, item: FormattedNode) -> bool:
         debug("format_table_list_list()")
@@ -555,7 +540,10 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        return self.format_list_expanded(item)
+        if self.format_list_multiline_compact(item):
+            return item
+        else:
+            return self.format_list_expanded(item)
 
     def format_list_table_row(
         self, item: FormattedNode, column_stats_list: List[ColumnStats]
@@ -587,6 +575,7 @@ class Formatter:
 
         debug("...format_list_table_row()")
         item.value = self.combine(buffer)
+        item.value_length = len(item.value)
         debug(f"  value={item.value}¶")
         item.format = Format.INLINE_TABULAR
 
@@ -662,25 +651,33 @@ class Formatter:
         item.format = Format.INLINE
         return True
 
-    def format_dict_multiline_compact(self, item: FormattedNode) -> bool:
+    def format_dict_multiline_compact(
+        self, item: FormattedNode, force_expand_prop_names: bool = False
+    ) -> bool:
         """Try to format this dict, spanning multiple lines, but with several items
         per line, if possible."""
         debug("format_dict_multiline_compact()")
         if item.complexity > self.max_compact_list_complexity:
             return False
 
+        max_prop_name_length = max([fn.name_length for fn in item.children])
+
         buffer = ["{", self.eol_str]
         self.indent(buffer, item.depth + 1)
 
         line_length_so_far = 0
         child_index = 0
-        compact = False
         while child_index < len(item.children):
             not_last_item = child_index < (len(item.children) - 1)
             prop = item.children[child_index]
-            item_length = (
-                prop.name_length + len(self.padded_colon_str) + prop.value_length
-            )
+            prop_buffer = [
+                prop.name,
+                self.padded_colon_str,
+                prop.value,
+            ]
+            if force_expand_prop_names:
+                prop_buffer.insert(1, " " * (max_prop_name_length - prop.name_length))
+            item_length = sum(map(len, prop_buffer))
 
             segment_length = item_length + len(self.padded_comma_str)
             if child_index != 0:
@@ -703,19 +700,12 @@ class Formatter:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
-                else:
-                    compact = True
-            buffer += [prop.name, self.padded_colon_str, prop.value]
+            buffer += prop_buffer
             if not_last_item:
                 buffer += self.padded_comma_str
 
             child_index += 1
             line_length_so_far += segment_length
-
-        if not compact:
-            # return False if every item starts from a new line
-            # allowing table_list_dict to take priority in such scenario
-            return False
 
         buffer += self.eol_str
         self.indent(buffer, item.depth)
@@ -741,7 +731,10 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, prop_stats)
 
-        return self.format_dict_expanded(item, True)
+        if self.format_dict_multiline_compact(item, True):
+            return item
+        else:
+            return self.format_dict_expanded(item, True)
 
     def format_table_dict_list(self, item: FormattedNode) -> bool:
         """Format this dict with one child list per line, and those lists padded to
@@ -760,7 +753,10 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        return self.format_dict_expanded(item, True)
+        if self.format_dict_multiline_compact(item, True):
+            return item
+        else:
+            return self.format_dict_expanded(item, True)
 
     def format_dict_table_row(
         self, item: FormattedNode, column_stats_list: List[ColumnStats]
@@ -812,6 +808,7 @@ class Formatter:
         buffer += " }"
 
         item.value = self.combine(buffer)
+        item.value_length = len(item.value)
         item.format = Format.INLINE_TABULAR
 
     def format_dict_expanded(
