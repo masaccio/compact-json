@@ -125,7 +125,7 @@ usage: _compact_json.py [-h] [-V] [--crlf] [--max-inline-length N]
 Format JSON into compact, human readble form
 
 positional arguments:
-  json                  JSON file(s) to dump
+  json                  JSON file(s) to parse (or stdin with "-")
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -150,6 +150,8 @@ optional arguments:
   --align-properties    Align property names of expanded dicts
   --unicode             Treat strings as unicode East Asian characters
 ```
+
+`compact-json` can be used in a shell pipeline to read from stdin when passed `-` as the file argument.
 
 ## Format options
 
