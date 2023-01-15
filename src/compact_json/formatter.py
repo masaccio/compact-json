@@ -228,6 +228,9 @@ class Formatter:
     east_asian_string_widths
         If True (default is False), format strings using unicodedata.east_asian_width rather
         than simple string lengths
+
+    multiline_compact_dict
+        If True (default is False), format dict into multi-line compact style like list
     """
 
     json_eol_style: EolStyle = EolStyle.LF
@@ -248,6 +251,7 @@ class Formatter:
     prefix_string: bool = ""
     ensure_ascii: bool = True
     east_asian_string_widths: bool = False
+    multiline_compact_dict: bool = False
 
     def __post_init__(self):
         self.eol_str = ""
@@ -379,7 +383,7 @@ class Formatter:
             if self.format_dict_inline(item):
                 return item
 
-        if item.depth > self.always_expand_depth:
+        if item.depth > self.always_expand_depth and self.multiline_compact_dict:
             if self.format_dict_multiline_compact(item):
                 return item
 
