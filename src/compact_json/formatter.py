@@ -465,6 +465,7 @@ class Formatter:
 
         line_length_so_far = 0
         child_index = 0
+        compact = False
         while child_index < len(item.children):
             not_last_item = child_index < (len(item.children) - 1)
 
@@ -490,6 +491,8 @@ class Formatter:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
+                else:
+                    compact = True
 
             buffer += item.children[child_index].value
             if not_last_item:
@@ -497,6 +500,11 @@ class Formatter:
 
             child_index += 1
             line_length_so_far += segment_length
+
+        if not compact:
+            # return False if every item starts from a new line
+            # allowing table_list_dict to take priority in such scenario
+            return False
 
         buffer += self.eol_str
         self.indent(buffer, item.depth)
