@@ -12,7 +12,7 @@ name = "compact-json"
 packages = [{include = "compact_json", from = "src"}]
 readme = "README.md"
 repository = "https://github.com/masaccio/compact-json"
-version = "1.4.0"
+version = "1.5.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -39,7 +39,7 @@ branch = true
 directory = "coverage_html_report"
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/compact_json"
+addopts = "--cov=src/compact_json --cov-report=term-missing"
 
 [tool.tox]
 legacy_tox_ini = """
