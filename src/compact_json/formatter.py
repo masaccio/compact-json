@@ -47,7 +47,7 @@ class FormattedNode:
         self.depth = 0
         self.kind = JsonValueKind.UNDEFINED
         self.format = Format.INLINE
-        self.children = []
+        self.children: list[FormattedNode] = []
 
     def cleanup(self):
         if self.format != Format.INLINE:
@@ -452,13 +452,13 @@ class Formatter:
         if item.complexity > self.max_compact_list_complexity:
             return False
 
-        if any(
-            [fn.format != Format.INLINE for fn in item.children]
-        ):  # pragma: no cover
-            warnings.warn(
-                f"list elements not inline (please report an issue)", RuntimeWarning
-            )
-            return False
+        # if any(
+        #     [fn.format != Format.INLINE for fn in item.children]
+        # ):  # pragma: no cover
+        #     warnings.warn(
+        #         f"list elements not inline (please report an issue)", RuntimeWarning
+        #     )
+        #     return False
 
         buffer = ["[", self.eol_str]
         self.indent(buffer, item.depth + 1)
@@ -470,17 +470,26 @@ class Formatter:
 
             item_length = item.children[child_index].value_length
             segment_length = item_length + len(self.padded_comma_str)
-            if (
-                line_length_so_far + segment_length > self.max_inline_length
-                and line_length_so_far > 0
-            ):
-                debug(f"  max_inline_length={self.max_inline_length}")
-                debug(f"  line_length_so_far={line_length_so_far}")
-                debug(f"  segment_length={segment_length}")
-                debug(f"  buffer={buffer}¶")
-                buffer += self.eol_str
-                self.indent(buffer, item.depth + 1)
-                line_length_so_far = 0
+            if child_index != 0:
+                if (
+                    line_length_so_far + segment_length > self.max_inline_length
+                    and line_length_so_far > 0
+                ):
+                    debug(f"  max_inline_length={self.max_inline_length}")
+                    debug(f"  line_length_so_far={line_length_so_far}")
+                    debug(f"  segment_length={segment_length}")
+                    debug(f"  buffer={buffer}¶")
+                    buffer += self.eol_str
+                    self.indent(buffer, item.depth + 1)
+                    line_length_so_far = 0
+                elif (
+                    item.children[child_index].format != Format.INLINE
+                    or item.children[child_index - 1].format != Format.INLINE
+                ):
+                    # todo: add debug info?
+                    buffer += self.eol_str
+                    self.indent(buffer, item.depth + 1)
+                    line_length_so_far = 0
 
             buffer += item.children[child_index].value
             if not_last_item:
