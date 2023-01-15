@@ -460,14 +460,6 @@ class Formatter:
         if item.complexity > self.max_compact_list_complexity:
             return False
 
-        # if any(
-        #     [fn.format != Format.INLINE for fn in item.children]
-        # ):  # pragma: no cover
-        #     warnings.warn(
-        #         f"list elements not inline (please report an issue)", RuntimeWarning
-        #     )
-        #     return False
-
         buffer = ["[", self.eol_str]
         self.indent(buffer, item.depth + 1)
 
