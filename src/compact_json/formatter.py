@@ -412,14 +412,6 @@ class Formatter:
         if item.complexity > self.max_inline_complexity:
             return False
 
-        if any(
-            [fn.format != Format.INLINE for fn in item.children]
-        ):  # pragma: no cover
-            warnings.warn(
-                f"list elements not inline (please report an issue)", RuntimeWarning
-            )
-            return False
-
         if item.complexity >= 2:
             use_bracket_padding = self.nested_bracket_padding
         else:
