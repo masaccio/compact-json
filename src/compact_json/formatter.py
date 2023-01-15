@@ -520,7 +520,10 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, col_stats)
 
-        if self.format_list_multiline_compact(item):
+        if (
+            item.depth > self.always_expand_depth
+            and self.format_list_multiline_compact(item)
+        ):
             return item
         else:
             return self.format_list_expanded(item)
@@ -540,7 +543,10 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        if self.format_list_multiline_compact(item):
+        if (
+            item.depth > self.always_expand_depth
+            and self.format_list_multiline_compact(item)
+        ):
             return item
         else:
             return self.format_list_expanded(item)
@@ -692,10 +698,13 @@ class Formatter:
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
                     line_length_so_far = 0
-                elif (
-                    prop.format != Format.INLINE
-                    or item.children[child_index - 1].format != Format.INLINE
-                ):
+                elif prop.format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ] or item.children[child_index - 1].format not in [
+                    Format.INLINE,
+                    Format.INLINE_TABULAR,
+                ]:
                     # todo: add debug info?
                     buffer += self.eol_str
                     self.indent(buffer, item.depth + 1)
@@ -731,7 +740,10 @@ class Formatter:
         for child in item.children:
             self.format_dict_table_row(child, prop_stats)
 
-        if self.format_dict_multiline_compact(item, True):
+        if (
+            item.depth > self.always_expand_depth
+            and self.format_dict_multiline_compact(item, True)
+        ):
             return item
         else:
             return self.format_dict_expanded(item, True)
@@ -753,7 +765,10 @@ class Formatter:
         for child in item.children:
             self.format_list_table_row(child, column_stats)
 
-        if self.format_dict_multiline_compact(item, True):
+        if (
+            item.depth > self.always_expand_depth
+            and self.format_dict_multiline_compact(item, True)
+        ):
             return item
         else:
             return self.format_dict_expanded(item, True)
