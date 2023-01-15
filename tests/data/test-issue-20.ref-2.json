@@ -1,4 +1,5 @@
 @max_compact_list_complexity=2
+@multiline_compact_dict=True
 [
     [
         { "k0": "v0"  , "k1": "v1"   }, { "k0": "va0" , "k1": "va1"  }, 
