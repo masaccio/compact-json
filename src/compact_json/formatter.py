@@ -548,10 +548,18 @@ class Formatter:
         if not col_stats:
             return False
 
+        value_length = (
+            sum([col.prop_name_length + col.max_value_size for col in col_stats])
+            + len(self.padded_colon_str) * len(col_stats)
+            + len(self.padded_comma_str) * (len(col_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_dict_table_row(child, col_stats)
+            child.value_length = value_length
 
         if self.format_list_multiline_compact(item):
             return item
@@ -568,10 +576,17 @@ class Formatter:
         if not column_stats:
             return False
 
+        value_length = (
+            sum([col.max_value_size for col in column_stats])
+            + len(self.padded_comma_str) * (len(column_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_list_table_row(child, column_stats)
+            child.value_length = value_length
 
         if self.format_list_multiline_compact(item):
             return item
@@ -779,10 +794,18 @@ class Formatter:
         if not prop_stats:
             return False
 
+        value_length = (
+            sum([col.prop_name_length + col.max_value_size for col in prop_stats])
+            + len(self.padded_colon_str) * len(prop_stats)
+            + len(self.padded_comma_str) * (len(prop_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_dict_table_row(child, prop_stats)
+            child.value_length = value_length
 
         if self.format_dict_multiline_compact(item, True):
             return item
@@ -801,10 +824,17 @@ class Formatter:
         if not column_stats:
             return False
 
+        value_length = (
+            sum([col.max_value_size for col in column_stats])
+            + len(self.padded_comma_str) * (len(column_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed.
         # Their children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_list_table_row(child, column_stats)
+            child.value_length = value_length
 
         if self.format_dict_multiline_compact(item, True):
             return item
@@ -860,18 +890,6 @@ class Formatter:
         buffer += " }"
 
         item.value = self.combine(buffer)
-        item.value_length = (
-            sum(
-                [
-                    col.prop_name_length
-                    + col.max_value_size
-                    + len(self.padded_colon_str)
-                    for col in column_stats_list
-                ]
-            )
-            + len(self.padded_comma_str) * (len(column_stats_list) - 1)
-            + 4
-        )
         item.format = Format.INLINE_TABULAR
 
     def format_dict_expanded(
