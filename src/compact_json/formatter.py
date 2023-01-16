@@ -4,12 +4,18 @@ import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
+from functools import lru_cache
 from typing import List
 
 from wcwidth import wcswidth
 
 logger = logging.getLogger(__name__)
 debug = logger.debug
+
+
+@lru_cache(4096)
+def _wcswidth(s):
+    return wcswidth(s)
 
 
 class EolStyle(Enum):
@@ -96,6 +102,10 @@ class ColumnStats:
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
         if self.kind == JsonValueKind.NULL:
             self.kind = prop_node.kind
+        if self.kind == JsonValueKind.FLOAT and prop_node.kind == JsonValueKind.INT:
+            self.kind = JsonValueKind.FLOAT
+        if self.kind == JsonValueKind.INT and prop_node.kind == JsonValueKind.FLOAT:
+            self.kind = JsonValueKind.FLOAT
         elif self.kind != prop_node.kind:
             self.kind = JsonValueKind.UNDEFINED
 
@@ -260,6 +270,11 @@ class Formatter:
         self.padded_colon_str = ""
         self.indent_cache = {}
 
+    def str_len(self, s: str) -> int:
+        if not self.east_asian_string_widths or s.isascii():
+            return len(s)
+        return _wcswidth(s)
+
     def serialize(self, value) -> str:
         self.init_internals()
         return self.prefix_string + self.format_element(0, value).value
@@ -296,10 +311,7 @@ class Formatter:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
-        if self.east_asian_string_widths:
-            simple_node.value_length = wcswidth(simple_node.value)
-        else:
-            simple_node.value_length = len(simple_node.value)
+        simple_node.value_length = self.str_len(simple_node.value)
         simple_node.complexity = 0
         simple_node.depth = depth
 
@@ -357,10 +369,7 @@ class Formatter:
                 warnings.warn(f"converting key value {k} to string", RuntimeWarning)
             k = str(k)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
-            if self.east_asian_string_widths:
-                elem.name_length = wcswidth(elem.name)
-            else:
-                elem.name_length = len(elem.name)
+            elem.name_length = self.str_len(elem.name)
             if k in keys:
                 warnings.warn(f"duplicate key value {k}", RuntimeWarning)
                 items[keys[k]] = elem
@@ -582,7 +591,11 @@ class Formatter:
 
         debug("...format_list_table_row()")
         item.value = self.combine(buffer)
-        item.value_length = len(item.value)
+        item.value_length = (
+            sum([col.max_value_size for col in column_stats_list])
+            - len(self.padded_comma_str) * (len(column_stats_list) - 1)
+            + 4
+        )
         debug(f"  value={item.value}¶")
         item.format = Format.INLINE_TABULAR
 
@@ -831,7 +844,18 @@ class Formatter:
         buffer += " }"
 
         item.value = self.combine(buffer)
-        item.value_length = len(item.value)
+        item.value_length = (
+            sum(
+                [
+                    col.prop_name_length
+                    + col.max_value_size
+                    + len(self.padded_colon_str)
+                    for col in column_stats_list
+                ]
+            )
+            + len(self.padded_comma_str) * (len(column_stats_list) - 1)
+            + 4
+        )
         item.format = Format.INLINE_TABULAR
 
     def format_dict_expanded(
