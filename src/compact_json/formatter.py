@@ -735,9 +735,13 @@ class Formatter:
             ]
             if force_expand_prop_names:
                 prop_buffer.insert(1, " " * (max_prop_name_length - prop.name_length))
-            item_length = sum(map(len, prop_buffer))
-
-            segment_length = item_length + len(self.padded_comma_str)
+                prop.name_length = max_prop_name_length
+            segment_length = (
+                prop.name_length
+                + len(self.padded_colon_str)
+                + prop.value_length
+                + len(self.padded_comma_str)
+            )
             if child_index != 0:
                 flag_new_line = False
                 if prop.format not in [
