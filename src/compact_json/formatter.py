@@ -102,9 +102,9 @@ class ColumnStats:
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
         if self.kind == JsonValueKind.NULL:
             self.kind = prop_node.kind
-        if self.kind == JsonValueKind.FLOAT and prop_node.kind == JsonValueKind.INT:
+        elif self.kind == JsonValueKind.FLOAT and prop_node.kind == JsonValueKind.INT:
             self.kind = JsonValueKind.FLOAT
-        if self.kind == JsonValueKind.INT and prop_node.kind == JsonValueKind.FLOAT:
+        elif self.kind == JsonValueKind.INT and prop_node.kind == JsonValueKind.FLOAT:
             self.kind = JsonValueKind.FLOAT
         elif self.kind != prop_node.kind:
             self.kind = JsonValueKind.UNDEFINED
