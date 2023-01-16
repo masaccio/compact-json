@@ -282,9 +282,9 @@ class Formatter:
 
     def format_element(self, depth: int, element) -> FormattedNode:
         """Base of recursion. Nearly everything comes through here."""
-        if type(element) == list:
+        if isinstance(element, list):
             formatted_item = self.format_list(depth, element)
-        elif type(element) == dict:
+        elif isinstance(element, dict):
             formatted_item = self.format_dict(depth, element)
         else:
             formatted_item = self.format_simple(depth, element)
@@ -307,11 +307,11 @@ class Formatter:
             simple_node.kind = JsonValueKind.NULL
             return simple_node
 
-        if type(element) == bool:
+        if isinstance(element, bool):
             simple_node.kind = JsonValueKind.BOOLEAN
-        elif type(element) == int:
+        elif isinstance(element, int):
             simple_node.kind = JsonValueKind.INT
-        elif type(element) == float:
+        elif isinstance(element, float):
             simple_node.kind = JsonValueKind.FLOAT
         else:
             simple_node.kind = JsonValueKind.STRING
@@ -353,7 +353,7 @@ class Formatter:
         keys = {}
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            if type(k) != str:
+            if not isinstance(k, str):
                 warnings.warn(f"converting key value {k} to string", RuntimeWarning)
             k = str(k)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
