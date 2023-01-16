@@ -119,6 +119,19 @@ class ColumnStats:
             self.chars_before_dec = max([self.chars_before_dec, len(prop_node.value)])
             debug(f"  chars_before_dec={self.chars_before_dec}")
 
+    @property
+    def max_value_size(self):
+        if self.kind == JsonValueKind.FLOAT:
+            return self.chars_before_dec + self.chars_after_dec + 1
+        elif self.kind == JsonValueKind.INT:
+            return self.chars_before_dec
+        else:
+            return self._max_value_size
+
+    @max_value_size.setter
+    def max_value_size(self, v):
+        self._max_value_size = v
+
     def format_value(self, value: str, value_length: int, dont_justify: bool) -> str:
         debug("format_value()")
         debug(f"  value={value}¶")
@@ -150,7 +163,10 @@ class ColumnStats:
             + value.ljust(self.max_value_size - (value_length - len(value)))
             + "¶"
         )
-        return value.ljust(self.max_value_size - (value_length - len(value)))
+        # should be more elegant if we move `dont_justify` into initialization
+        # and return _max_value_size from the property function accordingly
+        # but touching the interface can be risky
+        return value.ljust(self._max_value_size - (value_length - len(value)))
 
 
 @dataclass
@@ -493,7 +509,8 @@ class Formatter:
                 ]:
                     flag_new_line = True
                 elif (
-                    line_length_so_far + segment_length > self.max_inline_length
+                    line_length_so_far + segment_length
+                    > self.max_inline_length + len(self.padded_comma_str)
                     and line_length_so_far > 0
                 ):
                     debug(f"  max_inline_length={self.max_inline_length}")
@@ -593,7 +610,7 @@ class Formatter:
         item.value = self.combine(buffer)
         item.value_length = (
             sum([col.max_value_size for col in column_stats_list])
-            - len(self.padded_comma_str) * (len(column_stats_list) - 1)
+            + len(self.padded_comma_str) * (len(column_stats_list) - 1)
             + 4
         )
         debug(f"  value={item.value}¶")
@@ -724,7 +741,8 @@ class Formatter:
                 ]:
                     flag_new_line = True
                 elif (
-                    line_length_so_far + segment_length > self.max_inline_length
+                    line_length_so_far + segment_length
+                    > self.max_inline_length + len(self.padded_comma_str)
                     and line_length_so_far > 0
                 ):
                     debug(f"  max_inline_length={self.max_inline_length}")
