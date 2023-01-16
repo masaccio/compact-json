@@ -80,8 +80,9 @@ def _fixed_value(value, num_decimals: int):
 class ColumnStats:
     """Used in figuring out how to format properties/list items as columns in a table format."""
 
-    def __init__(self):
+    def __init__(self, dont_justify: bool):
         debug("ColumnStats()")
+        self.dont_justify = dont_justify
         self.prop_name = ""
         self.prop_name_length = 0
         self.order_sum = 0
@@ -121,7 +122,9 @@ class ColumnStats:
 
     @property
     def max_value_size(self):
-        if self.kind == JsonValueKind.FLOAT:
+        if self.dont_justify:
+            return self._max_value_size
+        elif self.kind == JsonValueKind.FLOAT:
             return self.chars_before_dec + self.chars_after_dec + 1
         elif self.kind == JsonValueKind.INT:
             return self.chars_before_dec
@@ -132,7 +135,7 @@ class ColumnStats:
     def max_value_size(self, v):
         self._max_value_size = v
 
-    def format_value(self, value: str, value_length: int, dont_justify: bool) -> str:
+    def format_value(self, value: str, value_length: int) -> str:
         debug("format_value()")
         debug(f"  value={value}¶")
         debug(f"  value_length={value_length}")
@@ -145,7 +148,7 @@ class ColumnStats:
 
         if (
             self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT
-        ) and not dont_justify:
+        ) and not self.dont_justify:
             adjusted_val = _fixed_value(value, self.chars_after_dec)
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
@@ -163,10 +166,7 @@ class ColumnStats:
             + value.ljust(self.max_value_size - (value_length - len(value)))
             + "¶"
         )
-        # should be more elegant if we move `dont_justify` into initialization
-        # and return _max_value_size from the property function accordingly
-        # but touching the interface can be risky
-        return value.ljust(self._max_value_size - (value_length - len(value)))
+        return value.ljust(self.max_value_size - (value_length - len(value)))
 
 
 @dataclass
@@ -594,7 +594,6 @@ class Formatter:
             buffer += column_stats.format_value(
                 child.value,
                 child.value_length,
-                self.dont_justify_numbers,
             )
 
         # Write padding for elements that exist in siblings but not this list.
@@ -838,7 +837,6 @@ class Formatter:
                 buffer += column_stats.format_value(
                     prop_node.value,
                     prop_node.value_length,
-                    self.dont_justify_numbers,
                 )
 
                 highest_non_blank_index = col_index
@@ -909,7 +907,7 @@ class Formatter:
         if len(item_list) < 2 or self.dont_justify_numbers:
             return
 
-        column_stats = ColumnStats()
+        column_stats = ColumnStats(self.dont_justify_numbers)
         for prop_node in item_list:
             column_stats.update(prop_node, 0)
 
@@ -921,7 +919,7 @@ class Formatter:
 
         for prop_node in item_list:
             prop_node.value = column_stats.format_value(
-                prop_node.value, prop_node.value_length, self.dont_justify_numbers
+                prop_node.value, prop_node.value_length
             )
             debug(
                 f"justify_parallel_numbers: value_length = {column_stats.max_value_size}"
@@ -944,7 +942,7 @@ class Formatter:
 
             for index, prop_node in enumerate(child.children):
                 if prop_node.name not in props:
-                    prop_stats = ColumnStats()
+                    prop_stats = ColumnStats(self.dont_justify_numbers)
                     prop_stats.prop_name = prop_node.name
                     prop_stats.prop_name_length = prop_node.name_length
                     props[prop_stats.prop_name] = prop_stats
@@ -1001,7 +999,9 @@ class Formatter:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
-        col_stats_list = [ColumnStats() for x in range(number_of_columns)]
+        col_stats_list = [
+            ColumnStats(self.dont_justify_numbers) for x in range(number_of_columns)
+        ]
 
         for row_node in item.children:
             for index, child in enumerate(row_node.children):
