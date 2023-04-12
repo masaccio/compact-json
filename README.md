@@ -95,7 +95,7 @@ with open("input.json", "r") as f:
 with open("input.json", "r") as f:
     obj = json.load(f)
 
-formatter.json(obj, output_file="output.json", newline_at_eof=True)
+formatter.dump(obj, output_file="output.json", newline_at_eof=True)
 ```
 
 ## Runtime warnings
