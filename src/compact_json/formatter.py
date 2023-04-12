@@ -4,7 +4,8 @@ import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
-from typing import List
+from pathlib import PosixPath
+from typing import Any, List, Union
 
 from wcwidth import wcswidth
 
@@ -259,6 +260,19 @@ class Formatter:
         self.padded_comma_str = ""
         self.padded_colon_str = ""
         self.indent_cache = {}
+
+    def dump(
+        self,
+        obj: Any,
+        output_file: Union[str, PosixPath],
+        newline_at_eof: bool = True,
+    ) -> None:
+        formatted: str = self.serialize(obj)
+        if newline_at_eof:
+            formatted += self.eol_str
+
+        with open(output_file, 'w') as f:
+            f.write(formatted)
 
     def serialize(self, value) -> str:
         self.init_internals()

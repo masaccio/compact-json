@@ -85,10 +85,17 @@ formatter.indent_spaces = 2
 formatter.max_inline_complexity = 10
 formatter.json_eol_style = EolStyle.LF
 
+# Format the JSON contents:
 with open("input.json", "r") as f:
     obj = json.load(f)
     json_string = formatter.serialize(obj)
     print(json_string)
+
+# Create a new JSON file with formatted JSON contents:
+with open("input.json", "r") as f:
+    obj = json.load(f)
+
+formatter.json(obj, output_file="output.json", newline_at_eof=True)
 ```
 
 ## Runtime warnings
@@ -114,7 +121,9 @@ Unlike the builtin `json` package, `compact-json` will issue runtime warnings wh
 When installed from `pip` a command-line utility `compact-json` is installed which has some useful defaults and most of the parameters available in `Formatter` can be set on the command-line:
 
 ``` shell
-usage: _compact_json.py [-h] [-V] [--crlf] [--max-inline-length N]
+usage:     compact-json [-h] [-V]
+                        [--output-filename [OUTPUT_FILENAME ...]]
+                        [--crlf] [--max-inline-length N]
                         [--max-inline-complexity N]
                         [--max-compact-list-complexity N]
                         [--bracket-padding {simple,nested}] [--indent N]
@@ -130,6 +139,10 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version
+  --output-filename [OUTPUT_FILENAME ...], -out [OUTPUT_FILENAME ...]
+                        The output file name(s). If empty, no new JSON file(s)
+                        will be saved. If provided, the number of output file
+                        names must match that of the input files.
   --crlf                Use Windows-style CRLR line endings
   --max-inline-length N
                         Limit inline elements to N chars, excluding
