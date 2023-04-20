@@ -14,6 +14,15 @@ REF_TYPES = """{
   "string": "value"
 }"""
 
+REF_ISSUE_27 = """{
+  "key0": [
+    [ "subkey0",          1e-05 ], 
+    [ "subkey1",          2e-05 ], 
+    [ "subkey2",     3.14159265 ]
+  ]
+}
+"""
+
 
 @pytest.mark.filterwarnings("ignore:coercing key")
 def test_issue_7():
@@ -46,3 +55,17 @@ def test_types():
     formatter = Formatter(indent_spaces=2, max_inline_length=80)
     json_string = formatter.serialize(obj)
     assert json_string == REF_TYPES
+
+
+@pytest.mark.script_launch_mode("inprocess")
+def test_issue_26(script_runner):
+    ret = script_runner.run(
+        "compact-json",
+        "-l50",
+        "-i2",
+        "--justify-numbers",
+        "tests/data/test-issue-26.json",
+    )
+    assert ret.stderr == ""
+    assert ret.success
+    assert ret.stdout == REF_ISSUE_27

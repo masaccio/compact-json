@@ -13,6 +13,6 @@
             "console": "integratedTerminal",
             "env": {"PYTEST_ADDOPTS": "--no-cov"}, 
             "justMyCode": false
-          }
+        }
     ]
 }

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import List
+from math import modf
 
 from wcwidth import wcswidth
 
@@ -57,6 +58,9 @@ class FormattedNode:
 
 
 def _fixed_value(value, num_decimals: int):
+    if "e" in value:
+        return value
+
     if num_decimals > 0:
         quantize_str = "0." + ("0" * (num_decimals - 1)) + "1"
     else:
@@ -100,7 +104,10 @@ class ColumnStats:
             self.kind = JsonValueKind.UNDEFINED
 
         if prop_node.kind == JsonValueKind.FLOAT:
-            (whole, frac) = str(prop_node.value).split(".")
+            if "." in prop_node.value:
+                (whole, frac) = prop_node.value.split(".")
+            else:
+                (whole, frac) = (prop_node.value, "")
             self.chars_after_dec = max([self.chars_after_dec, len(frac)])
             self.chars_before_dec = max([self.chars_before_dec, len(whole)])
             debug(f"  chars_after_dec={self.chars_after_dec}")
