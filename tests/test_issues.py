@@ -1,6 +1,4 @@
-import json
-import re
-from pathlib import Path
+from collections import OrderedDict
 
 import pytest
 
@@ -11,7 +9,12 @@ REF_TYPES = """{
   "bool": [true, false], 
   "float": 1.234, 
   "int": [100, 200, 300], 
-  "string": "value"
+  "string": "value", 
+  "ordereddict": {
+    "aaa": 100, 
+    "bbb": 101, 
+    "ccc": 102
+  }
 }"""
 
 REF_ISSUE_27 = """{
@@ -51,8 +54,9 @@ def test_types():
         "float": 1.234,
         "int": [100, 200, 300],
         "string": "value",
+        "ordereddict": OrderedDict(aaa=100, bbb=101, ccc=102),
     }
-    formatter = Formatter(indent_spaces=2, max_inline_length=80)
+    formatter = Formatter(indent_spaces=2, max_inline_length=30)
     json_string = formatter.serialize(obj)
     assert json_string == REF_TYPES
 

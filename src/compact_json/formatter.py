@@ -4,6 +4,7 @@ import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
+from functools import lru_cache
 from typing import List
 from math import modf
 
@@ -11,6 +12,11 @@ from wcwidth import wcswidth
 
 logger = logging.getLogger(__name__)
 debug = logger.debug
+
+
+@lru_cache(4096)
+def _wcswidth(s):
+    return wcswidth(s)
 
 
 class EolStyle(Enum):
@@ -78,8 +84,9 @@ def _fixed_value(value, num_decimals: int):
 class ColumnStats:
     """Used in figuring out how to format properties/list items as columns in a table format."""
 
-    def __init__(self):
+    def __init__(self, dont_justify: bool):
         debug("ColumnStats()")
+        self.dont_justify = dont_justify
         self.prop_name = ""
         self.prop_name_length = 0
         self.order_sum = 0
@@ -100,6 +107,10 @@ class ColumnStats:
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
         if self.kind == JsonValueKind.NULL:
             self.kind = prop_node.kind
+        elif self.kind == JsonValueKind.FLOAT and prop_node.kind == JsonValueKind.INT:
+            self.kind = JsonValueKind.FLOAT
+        elif self.kind == JsonValueKind.INT and prop_node.kind == JsonValueKind.FLOAT:
+            self.kind = JsonValueKind.FLOAT
         elif self.kind != prop_node.kind:
             self.kind = JsonValueKind.UNDEFINED
 
@@ -116,7 +127,22 @@ class ColumnStats:
             self.chars_before_dec = max([self.chars_before_dec, len(prop_node.value)])
             debug(f"  chars_before_dec={self.chars_before_dec}")
 
-    def format_value(self, value: str, value_length: int, dont_justify: bool) -> str:
+    @property
+    def max_value_size(self):
+        if self.dont_justify:
+            return self._max_value_size
+        elif self.kind == JsonValueKind.FLOAT:
+            return self.chars_before_dec + self.chars_after_dec + 1
+        elif self.kind == JsonValueKind.INT:
+            return self.chars_before_dec
+        else:
+            return self._max_value_size
+
+    @max_value_size.setter
+    def max_value_size(self, v):
+        self._max_value_size = v
+
+    def format_value(self, value: str, value_length: int) -> str:
         debug("format_value()")
         debug(f"  value={value}¶")
         debug(f"  value_length={value_length}")
@@ -129,7 +155,7 @@ class ColumnStats:
 
         if (
             self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT
-        ) and not dont_justify:
+        ) and not self.dont_justify:
             adjusted_val = _fixed_value(value, self.chars_after_dec)
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
@@ -267,6 +293,11 @@ class Formatter:
         self.padded_colon_str = ""
         self.indent_cache = {}
 
+    def str_len(self, s: str) -> int:
+        if not self.east_asian_string_widths or s.isascii():
+            return len(s)
+        return _wcswidth(s)
+
     def serialize(self, value) -> str:
         self.init_internals()
         return self.prefix_string + self.format_element(0, value).value
@@ -289,9 +320,9 @@ class Formatter:
 
     def format_element(self, depth: int, element) -> FormattedNode:
         """Base of recursion. Nearly everything comes through here."""
-        if type(element) == list:
+        if isinstance(element, list):
             formatted_item = self.format_list(depth, element)
-        elif type(element) == dict:
+        elif isinstance(element, dict):
             formatted_item = self.format_dict(depth, element)
         else:
             formatted_item = self.format_simple(depth, element)
@@ -303,10 +334,7 @@ class Formatter:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
-        if self.east_asian_string_widths:
-            simple_node.value_length = wcswidth(simple_node.value)
-        else:
-            simple_node.value_length = len(simple_node.value)
+        simple_node.value_length = self.str_len(simple_node.value)
         simple_node.complexity = 0
         simple_node.depth = depth
 
@@ -314,11 +342,11 @@ class Formatter:
             simple_node.kind = JsonValueKind.NULL
             return simple_node
 
-        if type(element) == bool:
+        if isinstance(element, bool):
             simple_node.kind = JsonValueKind.BOOLEAN
-        elif type(element) == int:
+        elif isinstance(element, int):
             simple_node.kind = JsonValueKind.INT
-        elif type(element) == float:
+        elif isinstance(element, float):
             simple_node.kind = JsonValueKind.FLOAT
         else:
             simple_node.kind = JsonValueKind.STRING
@@ -360,14 +388,11 @@ class Formatter:
         keys = {}
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
-            if type(k) != str:
+            if not isinstance(k, str):
                 warnings.warn(f"converting key value {k} to string", RuntimeWarning)
             k = str(k)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
-            if self.east_asian_string_widths:
-                elem.name_length = wcswidth(elem.name)
-            else:
-                elem.name_length = len(elem.name)
+            elem.name_length = self.str_len(elem.name)
             if k in keys:
                 warnings.warn(f"duplicate key value {k}", RuntimeWarning)
                 items[keys[k]] = elem
@@ -491,7 +516,8 @@ class Formatter:
                 ]:
                     flag_new_line = True
                 elif (
-                    line_length_so_far + segment_length > self.max_inline_length
+                    line_length_so_far + segment_length
+                    > self.max_inline_length + len(self.padded_comma_str)
                     and line_length_so_far > 0
                 ):
                     debug(f"  max_inline_length={self.max_inline_length}")
@@ -529,10 +555,18 @@ class Formatter:
         if not col_stats:
             return False
 
+        value_length = (
+            sum([col.prop_name_length + col.max_value_size for col in col_stats])
+            + len(self.padded_colon_str) * len(col_stats)
+            + len(self.padded_comma_str) * (len(col_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_dict_table_row(child, col_stats)
+            child.value_length = value_length
 
         if self.format_list_multiline_compact(item):
             return item
@@ -549,10 +583,17 @@ class Formatter:
         if not column_stats:
             return False
 
+        value_length = (
+            sum([col.max_value_size for col in column_stats])
+            + len(self.padded_comma_str) * (len(column_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_list_table_row(child, column_stats)
+            child.value_length = value_length
 
         if self.format_list_multiline_compact(item):
             return item
@@ -575,7 +616,6 @@ class Formatter:
             buffer += column_stats.format_value(
                 child.value,
                 child.value_length,
-                self.dont_justify_numbers,
             )
 
         # Write padding for elements that exist in siblings but not this list.
@@ -589,7 +629,11 @@ class Formatter:
 
         debug("...format_list_table_row()")
         item.value = self.combine(buffer)
-        item.value_length = len(item.value)
+        item.value_length = (
+            sum([col.max_value_size for col in column_stats_list])
+            + len(self.padded_comma_str) * (len(column_stats_list) - 1)
+            + 4
+        )
         debug(f"  value={item.value}¶")
         item.format = Format.INLINE_TABULAR
 
@@ -698,9 +742,13 @@ class Formatter:
             ]
             if force_expand_prop_names:
                 prop_buffer.insert(1, " " * (max_prop_name_length - prop.name_length))
-            item_length = sum(map(len, prop_buffer))
-
-            segment_length = item_length + len(self.padded_comma_str)
+                prop.name_length = max_prop_name_length
+            segment_length = (
+                prop.name_length
+                + len(self.padded_colon_str)
+                + prop.value_length
+                + len(self.padded_comma_str)
+            )
             if child_index != 0:
                 flag_new_line = False
                 if prop.format not in [
@@ -718,7 +766,8 @@ class Formatter:
                 ]:
                     flag_new_line = True
                 elif (
-                    line_length_so_far + segment_length > self.max_inline_length
+                    line_length_so_far + segment_length
+                    > self.max_inline_length + len(self.padded_comma_str)
                     and line_length_so_far > 0
                 ):
                     debug(f"  max_inline_length={self.max_inline_length}")
@@ -756,10 +805,18 @@ class Formatter:
         if not prop_stats:
             return False
 
+        value_length = (
+            sum([col.prop_name_length + col.max_value_size for col in prop_stats])
+            + len(self.padded_colon_str) * len(prop_stats)
+            + len(self.padded_comma_str) * (len(prop_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed. Their
         # children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_dict_table_row(child, prop_stats)
+            child.value_length = value_length
 
         if self.format_dict_multiline_compact(item, True):
             return item
@@ -778,10 +835,17 @@ class Formatter:
         if not column_stats:
             return False
 
+        value_length = (
+            sum([col.max_value_size for col in column_stats])
+            + len(self.padded_comma_str) * (len(column_stats) - 1)
+            + 4
+        )
+
         # Reformat our immediate children using the width info we've computed.
         # Their children aren't recomputed, so this part isn't recursive.
         for child in item.children:
             self.format_list_table_row(child, column_stats)
+            child.value_length = value_length
 
         if self.format_dict_multiline_compact(item, True):
             return item
@@ -814,7 +878,6 @@ class Formatter:
                 buffer += column_stats.format_value(
                     prop_node.value,
                     prop_node.value_length,
-                    self.dont_justify_numbers,
                 )
 
                 highest_non_blank_index = col_index
@@ -838,7 +901,6 @@ class Formatter:
         buffer += " }"
 
         item.value = self.combine(buffer)
-        item.value_length = len(item.value)
         item.format = Format.INLINE_TABULAR
 
     def format_dict_expanded(
@@ -874,7 +936,7 @@ class Formatter:
         if len(item_list) < 2 or self.dont_justify_numbers:
             return
 
-        column_stats = ColumnStats()
+        column_stats = ColumnStats(self.dont_justify_numbers)
         for prop_node in item_list:
             column_stats.update(prop_node, 0)
 
@@ -886,7 +948,7 @@ class Formatter:
 
         for prop_node in item_list:
             prop_node.value = column_stats.format_value(
-                prop_node.value, prop_node.value_length, self.dont_justify_numbers
+                prop_node.value, prop_node.value_length
             )
             debug(
                 f"justify_parallel_numbers: value_length = {column_stats.max_value_size}"
@@ -909,7 +971,7 @@ class Formatter:
 
             for index, prop_node in enumerate(child.children):
                 if prop_node.name not in props:
-                    prop_stats = ColumnStats()
+                    prop_stats = ColumnStats(self.dont_justify_numbers)
                     prop_stats.prop_name = prop_node.name
                     prop_stats.prop_name_length = prop_node.name_length
                     props[prop_stats.prop_name] = prop_stats
@@ -966,7 +1028,9 @@ class Formatter:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
-        col_stats_list = [ColumnStats() for x in range(number_of_columns)]
+        col_stats_list = [
+            ColumnStats(self.dont_justify_numbers) for x in range(number_of_columns)
+        ]
 
         for row_node in item.children:
             for index, child in enumerate(row_node.children):
