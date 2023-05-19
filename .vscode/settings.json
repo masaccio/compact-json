@@ -2,9 +2,10 @@
     "[python]": {
         "editor.formatOnSave": true,
         "editor.wordWrap": "wordWrapColumn",
-        "editor.wordWrapColumn": 100
+        "editor.wordWrapColumn": 100,
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.linting.enabled": true,
     "python.linting.lintOnSave": true,
     "black-formatter.args": [],

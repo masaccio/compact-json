@@ -388,6 +388,8 @@ class Formatter:
         keys = {}
         for k, v in element.items():
             elem = self.format_element(depth + 1, v)
+            if isinstance(k, Enum):
+                k = k.value
             if not isinstance(k, str):
                 warnings.warn(f"converting key value {k} to string", RuntimeWarning)
             k = str(k)

@@ -73,3 +73,25 @@ def test_issue_26(script_runner):
     assert ret.stderr == ""
     assert ret.success
     assert ret.stdout == REF_ISSUE_27
+
+
+def test_issue_27():
+    from enum import Enum
+
+    class MyEnum(str, Enum):
+        abc = "Abc"
+        xyz = "XYZ"
+
+    class MyEnum2(Enum):
+        abc = 1
+        xyz = 2
+
+    formatter = Formatter()
+    result = formatter.serialize({MyEnum.abc: "abc", MyEnum.xyz: "xyz"})
+    assert result == '{"Abc": "abc", "XYZ": "xyz"}'
+
+    with pytest.warns(RuntimeWarning) as record:
+        result = formatter.serialize({MyEnum2.abc: "abc", MyEnum2.xyz: "xyz"})
+        assert result == '{"1": "abc", "2": "xyz"}'
+        assert len(record) == 2
+        assert str(record[0].message) == "converting key value 1 to string"
