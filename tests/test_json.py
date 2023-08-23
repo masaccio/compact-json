@@ -5,8 +5,10 @@ from compact_json import Formatter
 from pathlib import Path
 
 
+test_data_path = Path("tests/data")
+
+
 def test_json(pytestconfig):
-    test_data_path = Path("tests/data")
 
     if pytestconfig.getoption("test_verbose"):
         print("\n")
@@ -60,3 +62,13 @@ def test_json(pytestconfig):
                 print("=====")
 
             assert json_string == ref_json
+
+
+def test_dump(tmp_path):
+    tmp_file = tmp_path / 'test.json'
+    source_filename = test_data_path / "test-bool.json"
+    with open(source_filename) as f:
+        obj = json.load(f)
+    formatter = Formatter()
+    formatter.dump(obj, output_file=tmp_file, newline_at_eof=False)
+    assert tmp_file.read_text() == '{ "bools": {"true": true, "false": false} }'
