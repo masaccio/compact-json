@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import sys
 
 import compact_json
 from compact_json import EolStyle, Formatter, _get_version
@@ -15,14 +16,11 @@ def command_line_parser():
     parser.add_argument("-V", "--version", action="store_true")
 
     parser.add_argument(
-        "--output-filename",
-        "-out",
-        nargs="*",
-        default=None,
-        type=str,
-        help="The output file name(s). If empty, no new JSON file(s) will "
-        "be saved. If provided, the number of output file names must match "
-        "that of the input files."
+        "--output",
+        "-o",
+        action='append',
+        help="The output file name(s). The number of output file names must match "
+        "the number of input files."
     )
     parser.add_argument(
         "--crlf",
@@ -114,6 +112,11 @@ def command_line_parser():
 
 def main():  # noqa: C901
     parser = command_line_parser()
+
+    def die(message):
+        print(f"{parser.prog}: {message}", file=sys.stderr)
+        exit(1)
+
     args = parser.parse_args()
     if args.version:
         print(_get_version())
@@ -158,7 +161,7 @@ def main():  # noqa: C901
         line_ending = "\r\n" if args.crlf else "\n"
 
         in_files = args.json
-        out_files = args.output_filename
+        out_files = args.output
 
         if out_files is None:
             for fh in args.json:
@@ -168,11 +171,9 @@ def main():  # noqa: C901
             return
 
         if len(in_files) != len(out_files):
-            raise ValueError(
-                "The numbers of input and output file names do not match."
-            )
+            die("the numbers of input and output file names do not match")
 
-        for fn_in, fn_out in zip(args.json, args.output_filename):
+        for fn_in, fn_out in zip(args.json, args.output):
             obj = json.load(fn_in)
             json_string = formatter.dump(obj, output_file=fn_out)
 
