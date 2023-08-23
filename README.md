@@ -122,7 +122,7 @@ usage: _compact_json.py [-h] [-V] [--crlf] [--max-inline-length N]
                         [--prefix-string STRING] [--align-properties]
                         [json ...]
 
-Format JSON into compact, human readble form
+Format JSON into compact, human readable form
 
 positional arguments:
   json                  JSON file(s) to parse (or stdin with "-")
@@ -130,7 +130,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version
-  --crlf                Use Windows-style CRLR line endings
+  --crlf                Use Windows-style CRLF line endings
   --max-inline-length N
                         Limit inline elements to N chars, excluding
                         indentation and leading property names (default=50)

@@ -11,14 +11,14 @@ logger = logging.getLogger(compact_json.__name__)
 
 def command_line_parser():
     parser = argparse.ArgumentParser(
-        description="Format JSON into compact, human readble form"
+        description="Format JSON into compact, human readable form"
     )
     parser.add_argument("-V", "--version", action="store_true")
     parser.add_argument(
         "--crlf",
         default=False,
         action="store_true",
-        help="Use Windows-style CRLR line endings",
+        help="Use Windows-style CRLF line endings",
     )
     parser.add_argument(
         "--max-inline-length",
