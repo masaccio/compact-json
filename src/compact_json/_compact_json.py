@@ -165,7 +165,7 @@ def main():  # noqa: C901
                 obj = json.load(fh)
                 json_string = formatter.serialize(obj)
                 print(json_string, end=line_ending)
-                return
+            return
 
         if len(in_files) != len(out_files):
             raise ValueError(
