@@ -3,7 +3,7 @@ import logging
 import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from enum import Enum
+from enum import Enum, IntEnum, auto
 from functools import lru_cache
 from math import modf
 from pathlib import PosixPath
@@ -20,27 +20,27 @@ def _wcswidth(s):
     return wcswidth(s)
 
 
-class EolStyle(Enum):
-    CRLF = 1
-    LF = 2
+class EolStyle(IntEnum):
+    CRLF = auto()
+    LF = auto()
 
 
-class JsonValueKind(Enum):
-    UNDEFINED = 1
-    DICT = 2
-    LIST = 3
-    STRING = 3
-    INT = 4
-    FLOAT = 5
-    BOOLEAN = 6
-    NULL = 7
+class JsonValueKind(IntEnum):
+    UNDEFINED = auto()
+    DICT = auto()
+    LIST = auto()
+    STRING = auto()
+    INT = auto()
+    FLOAT = auto()
+    BOOLEAN = auto()
+    NULL = auto()
 
 
-class Format(Enum):
-    INLINE = 1
-    INLINE_TABULAR = 2
-    MULTILINE_COMPACT = 3
-    EXPANDED = 4
+class Format(IntEnum):
+    INLINE = auto()
+    INLINE_TABULAR = auto()
+    MULTILINE_COMPACT = auto()
+    EXPANDED = auto()
 
 
 class FormattedNode:
@@ -244,7 +244,7 @@ class Formatter:
         Value from 0 to 100 indicating how similar collections of inline lists need to be
         to be formatted as a table. Similarity for lists refers to how similar they are in
         length; if they all have the same length their similarity is 100. Setting this to
-        a value > disables table formatting with lists as rows.
+        a value > 100 disables table formatting with lists as rows.
 
     align_expanded_property_names:
         If True, property names of expanded dicts are padded to the same size.
@@ -309,7 +309,7 @@ class Formatter:
         if newline_at_eof:
             formatted += self.eol_str
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(formatted)
 
     def serialize(self, value) -> str:
@@ -591,7 +591,7 @@ class Formatter:
 
     def format_table_list_list(self, item: FormattedNode) -> bool:
         debug("format_table_list_list()")
-        if self.table_list_minimum_similarity > 100.5:
+        if self.table_list_minimum_similarity > 100:
             return False
 
         # Gather stats about our children's item widths, if they're eligible lists.
@@ -813,7 +813,7 @@ class Formatter:
     def format_table_dict_dict(self, item: FormattedNode) -> bool:
         """Format this dict with one child dict per line, and those dicts
         padded to line up nicely."""
-        if self.table_dict_minimum_similarity > 100.5:
+        if self.table_dict_minimum_similarity > 100:
             return False
 
         # Gather stats about our children's property order and width, if they're eligible dicts.
@@ -843,7 +843,7 @@ class Formatter:
         """Format this dict with one child list per line, and those lists padded to
         line up nicely."""
         debug("format_table_dict_list()")
-        if self.table_list_minimum_similarity > 100.5:
+        if self.table_list_minimum_similarity > 100:
             return False
 
         # Gather stats about our children's widths, if they're eligible lists.

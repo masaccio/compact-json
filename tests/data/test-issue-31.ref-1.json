@@ -1,0 +1,14 @@
+@max_inline_length=50
+@max_inline_complexity=2
+@max_compact_list_complexity=1
+@indent_spaces=4
+@simple_bracket_padding=True
+@table_list_minimum_similarity = 10
+[
+    "seq", 
+    [
+        "if", 
+        [ "=", "i", [ "prop", "length", "l" ] ], 
+        [ "return", "l" ]
+    ]
+]
