@@ -15,7 +15,7 @@ def test_version(script_runner):
 def test_help(script_runner):
     ret = script_runner.run("compact-json", "--help", print_result=False)
     assert ret.success
-    assert "Format JSON into compact, human readble form" in ret.stdout
+    assert "Format JSON into compact, human readable form" in ret.stdout
     assert "Indent N" in ret.stdout
     assert ret.stderr == ""
 
@@ -117,7 +117,7 @@ def test_main(script_runner):
     ret = script_runner.run("python3", "-m", "compact_json", "--help")
     assert ret.stderr == ""
     assert ret.success
-    assert "[-h] [-V] [--crlf]" in ret.stdout
+    assert "[-h] [-V] [--output" in ret.stdout
 
 
 @pytest.mark.script_launch_mode("subprocess")
@@ -138,3 +138,24 @@ def test_multifile(script_runner):
     assert ret.stderr == ""
     assert ret.success
     assert ret.stdout == '{ "bools": {"true": true, "false": false} }\n' * 2
+
+def test_output(script_runner, tmp_path):
+    tmp_file = tmp_path / 'test.json'
+    ret = script_runner.run(
+        "compact-json",
+        "tests/data/test-bool.json",
+        "--output",
+        str(tmp_file)
+    )
+    assert ret.stderr == ""
+    assert ret.success
+    assert tmp_file.read_text() == '{ "bools": {"true": true, "false": false} }\n'
+
+def test_output_mismatched_number_of_files(script_runner):
+    ret = script_runner.run(
+        "compact-json",
+        "tests/data/test-bool.json",
+        "--output", "foo", "--output", "bar"
+    )
+    assert ret.stderr == "compact-json: the numbers of input and output file names do not match\n"
+    assert ret.returncode == 1

@@ -1,7 +1,7 @@
 import argparse
 import json
 import logging
-from io import IOBase
+import sys
 
 import compact_json
 from compact_json import EolStyle, Formatter, _get_version
@@ -11,14 +11,22 @@ logger = logging.getLogger(compact_json.__name__)
 
 def command_line_parser():
     parser = argparse.ArgumentParser(
-        description="Format JSON into compact, human readble form"
+        description="Format JSON into compact, human readable form"
     )
     parser.add_argument("-V", "--version", action="store_true")
+
+    parser.add_argument(
+        "--output",
+        "-o",
+        action='append',
+        help="The output file name(s). The number of output file names must match "
+        "the number of input files."
+    )
     parser.add_argument(
         "--crlf",
         default=False,
         action="store_true",
-        help="Use Windows-style CRLR line endings",
+        help="Use Windows-style CRLF line endings",
     )
     parser.add_argument(
         "--max-inline-length",
@@ -104,6 +112,11 @@ def command_line_parser():
 
 def main():  # noqa: C901
     parser = command_line_parser()
+
+    def die(message):
+        print(f"{parser.prog}: {message}", file=sys.stderr)
+        exit(1)
+
     args = parser.parse_args()
     if args.version:
         print(_get_version())
@@ -146,10 +159,23 @@ def main():  # noqa: C901
         formatter.table_list_minimum_similarity = 50
 
         line_ending = "\r\n" if args.crlf else "\n"
-        for fh in args.json:
-            obj = json.load(fh)
-            json_string = formatter.serialize(obj)
-            print(json_string, end=line_ending)
+
+        in_files = args.json
+        out_files = args.output
+
+        if out_files is None:
+            for fh in args.json:
+                obj = json.load(fh)
+                json_string = formatter.serialize(obj)
+                print(json_string, end=line_ending)
+            return
+
+        if len(in_files) != len(out_files):
+            die("the numbers of input and output file names do not match")
+
+        for fn_in, fn_out in zip(args.json, args.output):
+            obj = json.load(fn_in)
+            json_string = formatter.dump(obj, output_file=fn_out)
 
 
 if __name__ == "__main__":  # pragma: no cover

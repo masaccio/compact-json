@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from functools import lru_cache
-from typing import List
 from math import modf
+from pathlib import PosixPath
+from typing import Any, List, Union
 
 from wcwidth import wcswidth
 
@@ -297,6 +298,19 @@ class Formatter:
         if not self.east_asian_string_widths or s.isascii():
             return len(s)
         return _wcswidth(s)
+
+    def dump(
+        self,
+        obj: Any,
+        output_file: Union[str, PosixPath],
+        newline_at_eof: bool = True,
+    ) -> None:
+        formatted: str = self.serialize(obj)
+        if newline_at_eof:
+            formatted += self.eol_str
+
+        with open(output_file, 'w') as f:
+            f.write(formatted)
 
     def serialize(self, value) -> str:
         self.init_internals()
