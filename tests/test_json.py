@@ -1,17 +1,23 @@
 import json
+import logging
 import re
-
-from compact_json import Formatter
 from pathlib import Path
+
+import compact_json
+from compact_json import Formatter
+
+logger = logging.getLogger(compact_json.__name__)
 
 
 test_data_path = Path("tests/data")
 
 
 def test_json(pytestconfig):
-
     if pytestconfig.getoption("test_verbose"):
         print("\n")
+
+    if pytestconfig.getoption("test_debug"):
+        logger.setLevel("DEBUG")
 
     if pytestconfig.getoption("test_file") is not None:
         ref_filename = pytestconfig.getoption("test_file")
@@ -65,7 +71,7 @@ def test_json(pytestconfig):
 
 
 def test_dump(tmp_path):
-    tmp_file = tmp_path / 'test.json'
+    tmp_file = tmp_path / "test.json"
     source_filename = test_data_path / "test-bool.json"
     with open(source_filename) as f:
         obj = json.load(f)
