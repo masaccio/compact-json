@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import warnings
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
@@ -265,6 +266,9 @@ class Formatter:
 
     multiline_compact_dict
         If True (default is False), format dict into multi-line compact style like list
+
+    omit_trailing_whitespace
+        If True, strip whitespace at the end of all output lines.
     """
 
     json_eol_style: EolStyle = EolStyle.LF
@@ -286,6 +290,7 @@ class Formatter:
     ensure_ascii: bool = True
     east_asian_string_widths: bool = False
     multiline_compact_dict: bool = False
+    omit_trailing_whitespace: bool = False
 
     def __post_init__(self):
         self.eol_str = ""
@@ -314,7 +319,10 @@ class Formatter:
 
     def serialize(self, value) -> str:
         self.init_internals()
-        return self.prefix_string + self.format_element(0, value).value
+        value = self.prefix_string + self.format_element(0, value).value
+        if self.omit_trailing_whitespace:
+            value = re.sub(r"\s+$", "", value, flags=re.MULTILINE)
+        return value
 
     def init_internals(self):
         """Set up some intermediate fields for efficiency."""

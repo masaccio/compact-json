@@ -18,9 +18,9 @@ def command_line_parser():
     parser.add_argument(
         "--output",
         "-o",
-        action='append',
+        action="append",
         help="The output file name(s). The number of output file names must match "
-        "the number of input files."
+        "the number of input files.",
     )
     parser.add_argument(
         "--crlf",
@@ -98,6 +98,12 @@ def command_line_parser():
         help="Characters will be output as-is without ASCII conversion",
     )
     parser.add_argument(
+        "--omit-trailing-whitespace",
+        default=False,
+        action="store_true",
+        help="Remove any trailing whitespace from output lines",
+    )
+    parser.add_argument(
         "--debug", default=False, action="store_true", help="Enable debug logging"
     )
 
@@ -144,6 +150,7 @@ def main():  # noqa: C901
             formatter.dont_justify_numbers = False
         if args.prefix_string is not None:
             formatter.prefix_string = args.prefix_string
+        formatter.omit_trailing_whitespace = args.omit_trailing_whitespace
         formatter.east_asian_string_widths = args.east_asian_chars
         formatter.ensure_ascii = not args.no_ensure_ascii
 
