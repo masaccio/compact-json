@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import pytest
-
 from compact_json import Formatter
 
 REF_ISSUE_7 = '{ "100": "mary", "200": "had", "300": ["a", "little", "lamb"] }'
@@ -15,7 +14,7 @@ REF_TYPES = """{
     "bbb": 101, 
     "ccc": 102
   }
-}"""
+}"""  # noqa: W291
 
 REF_ISSUE_27 = """{
   "key0": [
@@ -24,7 +23,7 @@ REF_ISSUE_27 = """{
     [ "subkey2",     3.14159265 ]
   ]
 }
-"""
+"""  # noqa: W291
 
 
 @pytest.mark.filterwarnings("ignore:coercing key")
@@ -64,11 +63,13 @@ def test_types():
 @pytest.mark.script_launch_mode("inprocess")
 def test_issue_26(script_runner):
     ret = script_runner.run(
-        "compact-json",
-        "-l50",
-        "-i2",
-        "--justify-numbers",
-        "tests/data/test-issue-26.json",
+        [
+            "compact-json",
+            "-l50",
+            "-i2",
+            "--justify-numbers",
+            "tests/data/test-issue-26.json",
+        ],
     )
     assert ret.stderr == ""
     assert ret.success

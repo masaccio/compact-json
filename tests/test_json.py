@@ -12,7 +12,7 @@ logger = logging.getLogger(compact_json.__name__)
 test_data_path = Path("tests/data")
 
 
-def test_json(pytestconfig):
+def test_json(pytestconfig):  # noqa: PLR0912, C901
     if pytestconfig.getoption("test_verbose"):
         print("\n")
 
@@ -50,7 +50,7 @@ def test_json(pytestconfig):
                     if line.startswith("@"):
                         (param, value) = re.split(r"\s*=\s*", line[1:])
                         value = value.strip()
-                        exec(f"formatter.{param} = {value}")
+                        exec(f"formatter.{param} = {value}")  # noqa: S102
                     else:
                         ref_json += line
             # No final newline

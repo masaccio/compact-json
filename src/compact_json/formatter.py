@@ -1,3 +1,5 @@
+"""Compact JSON formatter."""
+
 import json
 import logging
 import re
@@ -6,9 +8,8 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import Enum, IntEnum, auto
 from functools import lru_cache
-from math import modf
 from pathlib import PosixPath
-from typing import Any, List, Union
+from typing import Any, List, Union  # noqa: UP035
 
 from wcwidth import wcswidth
 
@@ -17,16 +18,20 @@ debug = logger.debug
 
 
 @lru_cache(4096)
-def _wcswidth(s):
+def _wcswidth(s: str) -> int:
     return wcswidth(s)
 
 
 class EolStyle(IntEnum):
+    """End of line style enumeration."""
+
     CRLF = auto()
     LF = auto()
 
 
 class JsonValueKind(IntEnum):
+    """JSON token enumeration."""
+
     UNDEFINED = auto()
     DICT = auto()
     LIST = auto()
@@ -38,6 +43,8 @@ class JsonValueKind(IntEnum):
 
 
 class Format(IntEnum):
+    """Format type enumeration."""
+
     INLINE = auto()
     INLINE_TABULAR = auto()
     MULTILINE_COMPACT = auto()
@@ -45,9 +52,10 @@ class Format(IntEnum):
 
 
 class FormattedNode:
-    """Data about a JSON element and how we've formatted it"""
+    """Data about a JSON element and how we've formatted it."""
 
-    def __init__(self):
+    def __init__(self: "FormattedNode") -> None:
+        """Initialise a new formating node."""
         self.name = ""
         self.name_length = 0
         self.value = ""
@@ -56,29 +64,28 @@ class FormattedNode:
         self.depth = 0
         self.kind = JsonValueKind.UNDEFINED
         self.format = Format.INLINE
-        self.children: list[FormattedNode] = []
+        self.children: List[FormattedNode] = []
 
-    def cleanup(self):
+    def cleanup(self: "FormattedNode") -> None:
         if self.format != Format.INLINE:
             self.children = []
         for child in self.children:
             child.children = []
 
 
-def _fixed_value(value, num_decimals: int):
+def _fixed_value(value, num_decimals: int) -> str:
     if "e" in value:
         return value
 
-    if num_decimals > 0:
-        quantize_str = "0." + ("0" * (num_decimals - 1)) + "1"
-    else:
-        quantize_str = "0"
+    quantize_str = "0." + "0" * (num_decimals - 1) + "1" if num_decimals > 0 else "0"
 
     try:
         return str(Decimal(value).quantize(Decimal(quantize_str)))
     except InvalidOperation:  # pragma: no cover
         warnings.warn(
-            f"handled quantize error (please report an issue)", RuntimeWarning
+            "handled quantize error (please report an issue)",
+            RuntimeWarning,
+            stacklevel=2,
         )
         return value
 
@@ -86,7 +93,7 @@ def _fixed_value(value, num_decimals: int):
 class ColumnStats:
     """Used in figuring out how to format properties/list items as columns in a table format."""
 
-    def __init__(self, dont_justify: bool):
+    def __init__(self: "ColumnStats", dont_justify: bool):
         debug("ColumnStats()")
         self.dont_justify = dont_justify
         self.prop_name = ""
@@ -98,7 +105,7 @@ class ColumnStats:
         self.chars_before_dec = 0
         self.chars_after_dec = 0
 
-    def update(self, prop_node: FormattedNode, index: int):
+    def update(self: "ColumnStats", prop_node: FormattedNode, index: int):
         """Add stats about this FormattedNode to this PropertyStats."""
         self.order_sum += index
         self.count += 1
@@ -109,9 +116,12 @@ class ColumnStats:
         self.max_value_size = max([self.max_value_size, prop_node.value_length])
         if self.kind == JsonValueKind.NULL:
             self.kind = prop_node.kind
-        elif self.kind == JsonValueKind.FLOAT and prop_node.kind == JsonValueKind.INT:
-            self.kind = JsonValueKind.FLOAT
-        elif self.kind == JsonValueKind.INT and prop_node.kind == JsonValueKind.FLOAT:
+        elif (
+            self.kind == JsonValueKind.FLOAT
+            and prop_node.kind == JsonValueKind.INT
+            or self.kind == JsonValueKind.INT
+            and prop_node.kind == JsonValueKind.FLOAT
+        ):
             self.kind = JsonValueKind.FLOAT
         elif self.kind != prop_node.kind:
             self.kind = JsonValueKind.UNDEFINED
@@ -130,7 +140,7 @@ class ColumnStats:
             debug(f"  chars_before_dec={self.chars_before_dec}")
 
     @property
-    def max_value_size(self):
+    def max_value_size(self: "ColumnStats"):
         if self.dont_justify:
             return self._max_value_size
         elif self.kind == JsonValueKind.FLOAT:
@@ -141,7 +151,7 @@ class ColumnStats:
             return self._max_value_size
 
     @max_value_size.setter
-    def max_value_size(self, v):
+    def max_value_size(self: "ColumnStats", v):
         self._max_value_size = v
 
     def format_value(self, value: str, value_length: int) -> str:
@@ -151,8 +161,8 @@ class ColumnStats:
         debug(
             "  is_numeric="
             + str(
-                self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT
-            ).lower()
+                self.kind == JsonValueKind.FLOAT or self.kind == JsonValueKind.INT,
+            ).lower(),
         )
 
         if (
@@ -173,15 +183,14 @@ class ColumnStats:
         debug(
             "  value="
             + value.ljust(self.max_value_size - (value_length - len(value)))
-            + "¶"
+            + "¶",
         )
         return value.ljust(self.max_value_size - (value_length - len(value)))
 
 
 @dataclass
 class Formatter:
-    """
-    Class that outputs JSON formatted in a compact, user-readable way. Any given container
+    """Class that outputs JSON formatted in a compact, user-readable way. Any given container
     is formatted in one of three ways:
     * Arrays or dicts will be written on a single line, if their contents aren't too
       complex and the resulting line wouldn't be too long.
@@ -292,20 +301,20 @@ class Formatter:
     multiline_compact_dict: bool = False
     omit_trailing_whitespace: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self: "Formatter") -> None:
         self.eol_str = ""
         self.indent_str = ""
         self.padded_comma_str = ""
         self.padded_colon_str = ""
         self.indent_cache = {}
 
-    def str_len(self, s: str) -> int:
+    def str_len(self: "Formatter", s: str) -> int:
         if not self.east_asian_string_widths or s.isascii():
             return len(s)
         return _wcswidth(s)
 
     def dump(
-        self,
+        self: "Formatter",
         obj: Any,
         output_file: Union[str, PosixPath],
         newline_at_eof: bool = True,
@@ -317,7 +326,7 @@ class Formatter:
         with open(output_file, "w") as f:
             f.write(formatted)
 
-    def serialize(self, value) -> str:
+    def serialize(self: "Formatter", value) -> str:
         self.init_internals()
         value = self.prefix_string + self.format_element(0, value).value
         if self.omit_trailing_whitespace:
@@ -331,16 +340,16 @@ class Formatter:
         self.padded_comma_str = ", " if self.comma_padding else ","
         self.padded_colon_str = ": " if self.colon_padding else ":"
 
-    def indent(self, buffer: List[str], depth: int) -> List[str]:
+    def indent(self: "Formatter", buffer: List[str], depth: int) -> List[str]:
         if depth not in self.indent_cache:
             self.indent_cache[depth] = self.indent_str * depth
         buffer += [self.prefix_string, self.indent_cache[depth]]
         return buffer
 
-    def combine(self, buffer: List[str]) -> str:
+    def combine(self: "Formatter", buffer: List[str]) -> str:
         return "".join(buffer)
 
-    def format_element(self, depth: int, element) -> FormattedNode:
+    def format_element(self: "Formatter", depth: int, element) -> FormattedNode:
         """Base of recursion. Nearly everything comes through here."""
         if isinstance(element, list):
             formatted_item = self.format_list(depth, element)
@@ -352,7 +361,7 @@ class Formatter:
         formatted_item.cleanup()
         return formatted_item
 
-    def format_simple(self, depth: int, element) -> FormattedNode:
+    def format_simple(self: "Formatter", depth: int, element) -> FormattedNode:
         """Formats a JSON element other than an list or dict."""
         simple_node = FormattedNode()
         simple_node.value = json.dumps(element, ensure_ascii=self.ensure_ascii)
@@ -375,9 +384,9 @@ class Formatter:
 
         return simple_node
 
-    def format_list(self, depth: int, element) -> FormattedNode:
+    def format_list(self: "Formatter", depth: int, element) -> FormattedNode:
         # Recursively format all of this list's elements.
-        items = list(map(lambda child: self.format_element(depth + 1, child), element))
+        items = [self.format_element(depth + 1, child) for child in element]
         if len(items) == 0:
             return self.empty_list(depth)
 
@@ -404,7 +413,7 @@ class Formatter:
         self.format_list_expanded(item)
         return item
 
-    def format_dict(self, depth: int, element: dict) -> FormattedNode:
+    def format_dict(self: "Formatter", depth: int, element: dict) -> FormattedNode:
         # Recursively format all of this dict's property values.
         items = []
         keys = {}
@@ -413,12 +422,14 @@ class Formatter:
             if isinstance(k, Enum):
                 k = k.value
             if not isinstance(k, str):
-                warnings.warn(f"converting key value {k} to string", RuntimeWarning)
+                warnings.warn(
+                    f"converting key value {k} to string", RuntimeWarning, stacklevel=2
+                )
             k = str(k)
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             elem.name_length = self.str_len(elem.name)
             if k in keys:
-                warnings.warn(f"duplicate key value {k}", RuntimeWarning)
+                warnings.warn(f"duplicate key value {k}", RuntimeWarning, stacklevel=2)
                 items[keys[k]] = elem
             else:
                 keys[k] = len(items)
@@ -448,7 +459,7 @@ class Formatter:
         self.format_dict_expanded(item, False)
         return item
 
-    def empty_list(self, depth: int) -> FormattedNode:
+    def empty_list(self: "Formatter", depth: int) -> FormattedNode:
         arr = FormattedNode()
         arr.value = "[]"
         debug("empty_list: value_length = 2")
@@ -459,7 +470,7 @@ class Formatter:
         arr.format = Format.INLINE
         return arr
 
-    def format_list_inline(self, item: FormattedNode) -> bool:
+    def format_list_inline(self: "Formatter", item: FormattedNode) -> bool:
         """Try to format this list in a single line, if possible."""
         if (
             item.depth <= self.always_expand_depth
@@ -503,9 +514,10 @@ class Formatter:
         item.format = Format.INLINE
         return True
 
-    def format_list_multiline_compact(self, item: FormattedNode) -> bool:
+    def format_list_multiline_compact(self: "Formatter", item: FormattedNode) -> bool:
         """Try to format this list, spanning multiple lines, but with several items
-        per line, if possible."""
+        per line, if possible.
+        """
         debug("format_list_multiline_compact()")
         if (
             item.depth <= self.always_expand_depth
@@ -568,9 +580,10 @@ class Formatter:
         item.format = Format.MULTILINE_COMPACT
         return True
 
-    def format_table_list_dict(self, item: FormattedNode) -> bool:
+    def format_table_list_dict(self: "Formatter", item: FormattedNode) -> bool:
         """Format this list with one child dict per line, and those dicts
-        padded to line up nicely."""
+        padded to line up nicely.
+        """
         if self.table_dict_minimum_similarity > 100.5:
             return False
 
@@ -597,7 +610,7 @@ class Formatter:
         else:
             return self.format_list_expanded(item)
 
-    def format_table_list_list(self, item: FormattedNode) -> bool:
+    def format_table_list_list(self: "Formatter", item: FormattedNode) -> bool:
         debug("format_table_list_list()")
         if self.table_list_minimum_similarity > 100:
             return False
@@ -621,11 +634,12 @@ class Formatter:
 
         if self.format_list_multiline_compact(item):
             return item
-        else:
-            return self.format_list_expanded(item)
+        return self.format_list_expanded(item)
 
     def format_list_table_row(
-        self, item: FormattedNode, column_stats_list: List[ColumnStats]
+        self: "Formatter",
+        item: FormattedNode,
+        column_stats_list: List[ColumnStats],
     ):
         """Format this list in a single line, with padding to line up with siblings."""
         buffer = ["[ "]
@@ -661,9 +675,10 @@ class Formatter:
         debug(f"  value={item.value}¶")
         item.format = Format.INLINE_TABULAR
 
-    def format_list_expanded(self, item: FormattedNode) -> bool:
+    def format_list_expanded(self: "Formatter", item: FormattedNode) -> bool:
         """Write this list with each element starting on its own line.
-        They might be multiple lines themselves"""
+        They might be multiple lines themselves
+        """
         buffer = ["[", self.eol_str]
         first_elem = True
         for child in item.children:
@@ -679,7 +694,7 @@ class Formatter:
         item.format = Format.EXPANDED
         return True
 
-    def empty_dict(self, depth: int):
+    def empty_dict(self: "Formatter", depth: int):
         obj = FormattedNode()
         obj.value = "{}"
         obj.value_length = 2
@@ -689,7 +704,7 @@ class Formatter:
         obj.format = Format.INLINE
         return obj
 
-    def format_dict_inline(self, item: FormattedNode) -> bool:
+    def format_dict_inline(self: "Formatter", item: FormattedNode) -> bool:
         """Format this dict as a single line, if possible."""
         if (
             item.depth <= self.always_expand_depth
@@ -737,10 +752,13 @@ class Formatter:
         return True
 
     def format_dict_multiline_compact(
-        self, item: FormattedNode, force_expand_prop_names: bool = False
+        self: "Formatter",
+        item: FormattedNode,
+        force_expand_prop_names: bool = False,
     ) -> bool:
         """Try to format this dict, spanning multiple lines, but with several items
-        per line, if possible."""
+        per line, if possible.
+        """
         debug("format_dict_multiline_compact()")
         if (
             not self.multiline_compact_dict
@@ -818,9 +836,10 @@ class Formatter:
         item.format = Format.MULTILINE_COMPACT
         return True
 
-    def format_table_dict_dict(self, item: FormattedNode) -> bool:
+    def format_table_dict_dict(self: "Formatter", item: FormattedNode) -> bool:
         """Format this dict with one child dict per line, and those dicts
-        padded to line up nicely."""
+        padded to line up nicely.
+        """
         if self.table_dict_minimum_similarity > 100:
             return False
 
@@ -847,9 +866,10 @@ class Formatter:
         else:
             return self.format_dict_expanded(item, True)
 
-    def format_table_dict_list(self, item: FormattedNode) -> bool:
+    def format_table_dict_list(self: "Formatter", item: FormattedNode) -> bool:
         """Format this dict with one child list per line, and those lists padded to
-        line up nicely."""
+        line up nicely.
+        """
         debug("format_table_dict_list()")
         if self.table_list_minimum_similarity > 100:
             return False
@@ -877,7 +897,9 @@ class Formatter:
             return self.format_dict_expanded(item, True)
 
     def format_dict_table_row(
-        self, item: FormattedNode, column_stats_list: List[ColumnStats]
+        self: "Formatter",
+        item: FormattedNode,
+        column_stats_list: List[ColumnStats],
     ):
         """Format this dict in a single line, with padding to line up with siblings."""
         # Bundle up each property name, value, quotes, colons, etc., or equivalent empty space.
@@ -886,7 +908,7 @@ class Formatter:
         for col_index, column_stats in enumerate(column_stats_list):
             buffer = []
             filtered_prop_nodes = list(
-                filter(lambda fn: fn.name == column_stats.prop_name, item.children)
+                filter(lambda fn: fn.name == column_stats.prop_name, item.children),
             )
             if len(filtered_prop_nodes) == 0:
                 # This dict doesn't have this particular property. Pad it out.
@@ -928,10 +950,13 @@ class Formatter:
         item.format = Format.INLINE_TABULAR
 
     def format_dict_expanded(
-        self, item: FormattedNode, force_expand_prop_names: bool
+        self: "Formatter",
+        item: FormattedNode,
+        force_expand_prop_names: bool,
     ) -> bool:
         """Write this dict with each element starting on its own line.
-        They might be multiple lines"""
+        They might be multiple lines.
+        """
         max_prop_name_length = max([fn.name_length for fn in item.children])
 
         buffer = ["{", self.eol_str]
@@ -954,9 +979,10 @@ class Formatter:
         item.format = Format.EXPANDED
         return True
 
-    def justify_parallel_numbers(self, item_list: List[FormattedNode]):
+    def justify_parallel_numbers(self: "Formatter", item_list: List[FormattedNode]):
         """If the given nodes are all numbers and not too big or small, format them
-        to the same precision and width."""
+        to the same precision and width.
+        """
         if len(item_list) < 2 or self.dont_justify_numbers:
             return
 
@@ -972,17 +998,19 @@ class Formatter:
 
         for prop_node in item_list:
             prop_node.value = column_stats.format_value(
-                prop_node.value, prop_node.value_length
+                prop_node.value,
+                prop_node.value_length,
             )
             debug(
-                f"justify_parallel_numbers: value_length = {column_stats.max_value_size}"
+                f"justify_parallel_numbers: value_length = {column_stats.max_value_size}",
             )
             prop_node.value_length = column_stats.max_value_size
 
-    def get_property_stats(self, item: FormattedNode) -> List[ColumnStats]:
+    def get_property_stats(self: "Formatter", item: FormattedNode) -> List[ColumnStats]:
         """Check if this node's dict children can be formatted as a table, and
         if so, return stats about their properties, such as max width.
-        Returns None if they're not eligible."""
+        Returns None if they're not eligible.
+        """
         if len(item.children) < 2:
             return None
 
@@ -1035,18 +1063,17 @@ class Formatter:
 
         return ordered_props
 
-    def get_list_stats(self, item: FormattedNode) -> List[ColumnStats]:
+    def get_list_stats(self: "Formatter", item: FormattedNode) -> List[ColumnStats]:
         """Check if this node's list children can be formatted as a table, and if
         so, gather stats like max width.
-        Returns None if they're not eligible."""
+        Returns None if they're not eligible.
+        """
         if len(item.children) < 2:
             return None
 
         valid = all(
-            [
-                fn.kind == JsonValueKind.LIST and fn.format == Format.INLINE
-                for fn in item.children
-            ]
+            fn.kind == JsonValueKind.LIST and fn.format == Format.INLINE
+            for fn in item.children
         )
         if not valid:
             return None
