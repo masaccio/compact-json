@@ -9,9 +9,9 @@ from compact_json import EolStyle, Formatter, _get_version
 logger = logging.getLogger(compact_json.__name__)
 
 
-def command_line_parser():
+def command_line_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Format JSON into compact, human readable form"
+        description="Format JSON into compact, human readable form",
     )
     parser.add_argument("-V", "--version", action="store_true")
 
@@ -23,10 +23,78 @@ def command_line_parser():
         "the number of input files.",
     )
     parser.add_argument(
+        "--align-expanded-property-names",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--align-properties",
+        default=False,
+        action="store_true",
+        help="Align property names of expanded dicts",
+    )
+    parser.add_argument(
+        "--always-expand-depth",
+        default="never",
+        choices=["never", "root", "children"],
+        help="Depth at which lists/dicts are always fully expanded",
+    )
+    parser.add_argument(
+        "--bracket-padding",
+        choices=["simple", "nested"],
+        default="nested",
+        help="If nested padding, add spaces inside outside brackes for nested lists/dicts",
+    )
+    parser.add_argument(
+        "--colon-padding",
+        action="store_true",
+        default=True,
+        help="Include a space after property colons",
+    )
+    parser.add_argument(
+        "--comma-padding",
+        action="store_true",
+        default=True,
+        help="Includes a space after commas separating list items and dict properties.",
+    )
+    parser.add_argument(
         "--crlf",
         default=False,
         action="store_true",
         help="Use Windows-style CRLF line endings",
+    )
+    parser.add_argument(
+        "--debug",
+        default=False,
+        action="store_true",
+        help="Enable debug logging",
+    )
+    parser.add_argument(
+        "--east-asian-chars",
+        default=False,
+        action="store_true",
+        help="Treat strings as unicode East Asian characters",
+    )
+    parser.add_argument(
+        "--indent",
+        "-i",
+        metavar="N",
+        type=int,
+        default=4,
+        help="Indent N spaces (default=4)",
+    )
+    parser.add_argument(
+        "--justify-numbers",
+        default=False,
+        action="store_true",
+        help="Right-align numbers with matching precision",
+    )
+    parser.add_argument(
+        "--max-compact-list-complexity",
+        metavar="N",
+        type=int,
+        default=1,
+        help="Maximum nesting over multiple lines (default 1)",
     )
     parser.add_argument(
         "--max-inline-length",
@@ -45,51 +113,10 @@ def command_line_parser():
         help="Maximum nesting: 0=basic types, 1=dict/list, 2=all (default=2)",
     )
     parser.add_argument(
-        "--max-compact-list-complexity",
-        metavar="N",
-        type=int,
-        default=1,
-        help="Maximum nesting over multiple lines (default 1)",
-    )
-    parser.add_argument(
-        "--bracket-padding",
-        choices=["simple", "nested"],
-        default="nested",
-        help="If nested padding, add spaces inside outside brackes for nested lists/dicts",
-    )
-    parser.add_argument(
-        "--indent",
-        "-i",
-        metavar="N",
-        type=int,
-        default=4,
-        help="Indent N spaces (default=4)",
-    )
-    parser.add_argument(
-        "--tab-indent", default=False, action="store_true", help="Use tabs to indent"
-    )
-    parser.add_argument(
-        "--justify-numbers",
-        default=False,
+        "--multiline-compact-dict",
         action="store_true",
-        help="Right-align numbers with matching precision",
-    )
-    parser.add_argument(
-        "--prefix-string",
-        metavar="STRING",
-        help="String attached to the beginning of every line",
-    )
-    parser.add_argument(
-        "--align-properties",
         default=False,
-        action="store_true",
-        help="Align property names of expanded dicts",
-    )
-    parser.add_argument(
-        "--east-asian-chars",
-        default=False,
-        action="store_true",
-        help="Treat strings as unicode East Asian characters",
+        help="Format dict into multi-line compact style like list",
     )
     parser.add_argument(
         "--no-ensure-ascii",
@@ -104,7 +131,31 @@ def command_line_parser():
         help="Remove any trailing whitespace from output lines",
     )
     parser.add_argument(
-        "--debug", default=False, action="store_true", help="Enable debug logging"
+        "--prefix-string",
+        metavar="STRING",
+        help="String attached to the beginning of every line",
+    )
+    parser.add_argument(
+        "--tab-indent",
+        default=False,
+        action="store_true",
+        help="Use tabs to indent",
+    )
+    parser.add_argument(
+        "--table-dict-minimum-similarity",
+        type=int,
+        default=75,
+        metavar="[0-101]",
+        choices=range(102),
+        help="Inline dict similarity threshold (101 disables table formatting",
+    )
+    parser.add_argument(
+        "--table-list-minimum-similarity",
+        type=int,
+        metavar="[0-101]",
+        choices=range(102),
+        default=75,
+        help="Inline list similarity threshold (101 disables table formatting",
     )
 
     parser.add_argument(
@@ -116,12 +167,12 @@ def command_line_parser():
     return parser
 
 
-def main():  # noqa: C901
+def main() -> None:  # noqa: C901, PLR0915, PLR0912
     parser = command_line_parser()
 
-    def die(message):
+    def die(message: str) -> None:
         print(f"{parser.prog}: {message}", file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     args = parser.parse_args()
     if args.version:
