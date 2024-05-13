@@ -155,8 +155,5 @@ def test_output_mismatched_number_of_files(script_runner):
             "bar",
         ],
     )
-    assert (
-        ret.stderr
-        == "compact-json: the numbers of input and output file names do not match\n"
-    )
+    assert ret.stderr == "compact-json: the numbers of input and output file names do not match\n"
     assert ret.returncode == 1
