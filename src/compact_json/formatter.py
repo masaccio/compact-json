@@ -173,7 +173,9 @@ class ColumnStats:
             ).lower(),
         )
 
-        if (self.kind in (JsonValueKind.FLOAT, JsonValueKind.INT)) and not self.dont_justify:
+        if (
+            self.kind in (JsonValueKind.FLOAT, JsonValueKind.INT)
+        ) and not self.dont_justify:
             adjusted_val = _fixed_value(value, self.chars_after_dec)
             total_length = self.chars_before_dec + self.chars_after_dec
             total_length += 1 if self.chars_after_dec > 0 else 0
@@ -187,7 +189,9 @@ class ColumnStats:
         debug(f"  max_value_size={self.max_value_size}")
         debug(f"  len(value)={len(value)}")
         debug(
-            "  value=" + value.ljust(self.max_value_size - (value_length - len(value))) + "¶",
+            "  value="
+            + value.ljust(self.max_value_size - (value_length - len(value)))
+            + "¶",
         )
         return value.ljust(self.max_value_size - (value_length - len(value)))
 
@@ -429,28 +433,27 @@ class Formatter:
         items = []
         keys = {}
         for k, v in element.items():
-            key = k
             elem = self.format_element(depth + 1, v)
             if isinstance(k, Enum):
-                key = key.value
-            if not isinstance(key, str):
+                k = k.value  # noqa: PLW2901
+            if not isinstance(k, str):
                 warnings.warn(
-                    f"converting key value {key} to string",
+                    f"converting key value {k} to string",
                     RuntimeWarning,
                     stacklevel=2,
                 )
-            key = str(key)
+            k = str(k)  # noqa: PLW2901
             elem.name = json.dumps(k, ensure_ascii=self.ensure_ascii)
             elem.name_length = self.str_len(elem.name)
-            if key in keys:
+            if k in keys:
                 warnings.warn(
-                    f"duplicate key value {key}",
+                    f"duplicate key value {k}",
                     RuntimeWarning,
                     stacklevel=2,
                 )
-                items[keys[key]] = elem
+                items[keys[k]] = elem
             else:
-                keys[key] = len(items)
+                keys[k] = len(items)
                 items.append(elem)
 
         if len(items) == 0:
@@ -491,7 +494,10 @@ class Formatter:
 
     def format_list_inline(self: Formatter, item: FormattedNode) -> bool:
         """Try to format this list in a single line, if possible."""
-        if item.depth <= self.always_expand_depth or item.complexity > self.max_inline_complexity:
+        if (
+            item.depth <= self.always_expand_depth
+            or item.complexity > self.max_inline_complexity
+        ):
             return False
 
         if any(fn.format != Format.INLINE for fn in item.children):
@@ -726,7 +732,10 @@ class Formatter:
 
     def format_dict_inline(self: Formatter, item: FormattedNode) -> bool:
         """Format this dict as a single line, if possible."""
-        if item.depth <= self.always_expand_depth or item.complexity > self.max_inline_complexity:
+        if (
+            item.depth <= self.always_expand_depth
+            or item.complexity > self.max_inline_complexity
+        ):
             return False
 
         if any(fn.format != Format.INLINE for fn in item.children):
@@ -1094,13 +1103,16 @@ class Formatter:
             return None
 
         valid = all(
-            fn.kind == JsonValueKind.LIST and fn.format == Format.INLINE for fn in item.children
+            fn.kind == JsonValueKind.LIST and fn.format == Format.INLINE
+            for fn in item.children
         )
         if not valid:
             return None
 
         number_of_columns = max([len(fn.children) for fn in item.children])
-        col_stats_list = [ColumnStats(self.dont_justify_numbers) for x in range(number_of_columns)]
+        col_stats_list = [
+            ColumnStats(self.dont_justify_numbers) for x in range(number_of_columns)
+        ]
 
         for row_node in item.children:
             for index, child in enumerate(row_node.children):
@@ -1110,7 +1122,9 @@ class Formatter:
         # too much in length, it probably doesn't make sense to format them together.
         total_elem_count = sum([len(fn.children) for fn in item.children])
         try:
-            similarity = 100 * total_elem_count / (len(item.children) * number_of_columns)
+            similarity = (
+                100 * total_elem_count / (len(item.children) * number_of_columns)
+            )
         except ZeroDivisionError:  # pragma: no cover
             return None
         if similarity < self.table_list_minimum_similarity:
