@@ -181,9 +181,12 @@ def main() -> None:  # noqa: C901, PLR0915, PLR0912
         parser.print_help()
     else:
         formatter = Formatter()
+        formatter.comma_padding = args.comma_padding
+        formatter.colon_padding = args.colon_padding
         formatter.max_inline_length = args.max_inline_length
         formatter.max_inline_complexity = args.max_inline_complexity
         formatter.max_compact_list_complexity = args.max_compact_list_complexity
+        formatter.multiline_compact_dict = args.multiline_compact_dict
         formatter.indent_spaces = args.indent
         if args.crlf:
             formatter.json_eol_style = EolStyle.CRLF
