@@ -16,17 +16,16 @@ version = "1.8.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-wcwidth = "^0.2.5"
+wcwidth = ">=0.2.5,<=0.2.8"
 setuptools = ">=69.0.3"
 importlib-resources = ">=6.1"
 
 [tool.poetry.group.dev.dependencies]
-black = {version = "^22.12.0", allow-prereleases = true}
-pylama = "^8.4.1"
-pytest-check = "^1.3.0"
-pytest-console-scripts = "^1.3.1"
-pytest-cov = "^4.0.0"
-ruff = "^0.4.4"
+black = {version = "*", allow-prereleases = true}
+pytest-check = "*"
+pytest-console-scripts = "*"
+pytest-cov = "*"
+ruff = "*"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
