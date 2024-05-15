@@ -78,6 +78,7 @@ python3 -m pip install compact-json
 As a python package, `compact-json` is instantiated with a `Formatter` class that has a range of properties to configure the formatting:
 
 ``` python
+import json
 from compact_json import Formatter, EolStyle
 
 formatter = Formatter()
