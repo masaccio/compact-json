@@ -16,7 +16,7 @@ version = "1.8.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-wcwidth = ">=0.2.5,<=0.2.8"
+wcwidth = ">0.2.8"
 setuptools = ">=69.0.3"
 importlib-resources = ">=6.1"
 
