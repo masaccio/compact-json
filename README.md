@@ -123,7 +123,7 @@ When installed from `pip` a command-line utility `compact-json` is installed whi
 
 ``` shell
 usage:     compact-json [-h] [-V]
-                        [--output-filename [OUTPUT_FILENAME ...]]
+                        [--output [OUTPUT_FILENAME ...]]
                         [--crlf] [--max-inline-length N]
                         [--max-inline-complexity N]
                         [--max-compact-list-complexity N]
@@ -140,10 +140,11 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version
-  --output-filename [OUTPUT_FILENAME ...], -out [OUTPUT_FILENAME ...]
+  --output              [OUTPUT_FILENAME ...], -out [OUTPUT_FILENAME ...]
                         The output file name(s). If empty, no new JSON file(s)
                         will be saved. If provided, the number of output file
                         names must match that of the input files.
+  --in-place            Save any edits back to the input file
   --crlf                Use Windows-style CRLF line endings
   --max-inline-length N
                         Limit inline elements to N chars, excluding

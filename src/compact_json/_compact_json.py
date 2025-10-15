@@ -15,13 +15,21 @@ def command_line_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-V", "--version", action="store_true")
 
-    parser.add_argument(
+    out_group = parser.add_mutually_exclusive_group()
+    out_group.add_argument(
         "--output",
         "-o",
         action="append",
         help="The output file name(s). The number of output file names must match "
         "the number of input files.",
     )
+    out_group.add_argument(
+        "--in-place",
+        action="store_true",
+        default=False,
+        help="Save any edits back to the input file",
+    )
+
     parser.add_argument(
         "--align-expanded-property-names",
         action="store_true",
@@ -161,7 +169,6 @@ def command_line_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "json",
         nargs="*",
-        type=argparse.FileType("r"),
         help='JSON file(s) to parse (or stdin with "-")',
     )
     return parser
@@ -222,21 +229,36 @@ def main() -> None:  # noqa: C901, PLR0915, PLR0912
         line_ending = "\r\n" if args.crlf else "\n"
 
         in_files = args.json
-        out_files = args.output
 
-        if out_files is None:
-            for fh in args.json:
-                obj = json.load(fh)
-                json_string = formatter.serialize(obj)
-                print(json_string, end=line_ending)
-            return
+        if args.in_place:
+            out_files = args.json
+        elif args.output is None:
+            out_files = [None] * len(in_files)
+        else:
+            if len(in_files) != len(args.output):
+                die("the numbers of input and output file names do not match")
+            out_files = args.output
 
-        if len(in_files) != len(out_files):
-            die("the numbers of input and output file names do not match")
+        for fn_in, fn_out in zip(in_files, out_files):
+            if fn_in == "-":
+                in_json_string = sys.stdin.read()
+            else:
+                try:
+                    in_json_string = open(fn_in, "r").read()
+                except FileNotFoundError as ex:
+                    die(ex)
 
-        for fn_in, fn_out in zip(args.json, args.output):
-            obj = json.load(fn_in)
-            json_string = formatter.dump(obj, output_file=fn_out)
+            try:
+                obj = json.loads(in_json_string)
+            except Exception as ex:
+                die("While reading {}: {}".format(fn_in, ex))
+
+            out_json_string = formatter.serialize(obj) + line_ending
+
+            if fn_out is None:
+                sys.stdout.write(out_json_string)
+            elif not args.in_place or in_json_string != out_json_string:
+                open(fn_out, "w").write(out_json_string)
 
 
 if __name__ == "__main__":  # pragma: no cover
