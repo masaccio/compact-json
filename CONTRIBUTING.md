@@ -52,6 +52,7 @@ Testing and configuration is based on [Poetry](https://python-poetry.org) and is
 You should also verify that existing [tests](./tests) are still working and you are encouraged to add new ones. You are also encouraged to add tests that at least maintain the current level of code coverage. You can run the tests using the following commands from the root folder:
 
 ```bash
+poetry install    # Only required the first time
 poetry run pytest
 ```
 
