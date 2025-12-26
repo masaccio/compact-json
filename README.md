@@ -6,6 +6,8 @@
 
 `compact-json` is a JSON formatter that produces configurably compact JSON that remains human-readable.
 
+**This package is now deprecated** and you are strongly encouraged to migrate to [fractured-json](https://github.com/masaccio/fractured-json-python) which tracks [FracturedJson](https://github.com/j-brooke/FracturedJson) using that project's .NET assembly directly.
+
 Any given container is formatted in one of three ways:
 
 * Python lists or dicts will be written on a single line, if their contents aren't too complex and the resulting line wouldn't be too long.
