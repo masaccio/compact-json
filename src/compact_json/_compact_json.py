@@ -175,6 +175,13 @@ def main() -> None:  # noqa: C901, PLR0915, PLR0912
         sys.exit(1)
 
     args = parser.parse_args()
+
+    def load_json(fh):
+        try:
+            return json.load(fh)
+        except json.JSONDecodeError as e:
+            die(f"invalid JSON in {fh.name}: {e}")
+
     if args.version:
         print(_get_version())
     elif len(args.json) == 0:
@@ -226,7 +233,7 @@ def main() -> None:  # noqa: C901, PLR0915, PLR0912
 
         if out_files is None:
             for fh in args.json:
-                obj = json.load(fh)
+                obj = load_json(fh)
                 json_string = formatter.serialize(obj)
                 print(json_string, end=line_ending)
             return
@@ -235,7 +242,7 @@ def main() -> None:  # noqa: C901, PLR0915, PLR0912
             die("the numbers of input and output file names do not match")
 
         for fn_in, fn_out in zip(args.json, args.output):
-            obj = json.load(fn_in)
+            obj = load_json(fn_in)
             json_string = formatter.dump(obj, output_file=fn_out)
 
 

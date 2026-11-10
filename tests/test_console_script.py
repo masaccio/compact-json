@@ -157,3 +157,13 @@ def test_output_mismatched_number_of_files(script_runner):
     )
     assert ret.stderr == "compact-json: the numbers of input and output file names do not match\n"
     assert ret.returncode == 1
+
+
+def test_invalid_json_is_clean_error(script_runner, tmp_path):
+    bad = tmp_path / "bad.json"
+    bad.write_text("{not valid json", encoding="utf-8")
+    ret = script_runner.run(["compact-json", str(bad)], print_result=False)
+    assert not ret.success
+    assert ret.returncode == 1
+    assert "invalid JSON" in ret.stderr
+    assert "Traceback" not in ret.stderr
